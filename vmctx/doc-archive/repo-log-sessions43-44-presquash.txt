@@ -1,0 +1,280 @@
+commit bf042402c27aa21a70c4b883e6911cac2c7d5c09
+Author: Bi Wu <biwu85@gmail.com>
+Commit: Bi Wu <biwu85@gmail.com>
+
+    vmctx: a breadth test harness for real programs, and a concurrent-run port fix
+    
+    tests/progs.sh runs 30 real programs of many shapes -- text tools,
+    interpreters, threads, a compiler and the binary it produces, archive
+    round trips, git, TLS, crypto, image processing, procfs readers, shell
+    pipelines, rsync -- each both natively and as a vmctx guest, and grades
+    each by its own predicate (output equality, roundtrip bit-exactness, or
+    exit code). It is the breadth counterpart to the correctness suite: 25 of
+    30 pass today, and the harness names precisely which shapes do not yet.
+    
+    local-here.sh, in shared mode, no longer requires the caller to choose a
+    port: it picks a free pair itself, and both it and progs.sh keep their
+    ports below the ephemeral range so a harness listen port can never lose a
+    race against an outgoing connection's source port -- a collision that
+    surfaced far away, as vmremote's page service failing to bind and the run
+    parking to its timeout.
+    
+    HISTORY.md and PITFALLS.md carry the campaign's findings and the traps it
+    re-taught; the session handoff records the remaining frontiers and the
+    next design step for guest clocks.
+
+commit 20de729e36845740c816d0852c91df47534d6deb
+Author: Bi Wu <biwu85@gmail.com>
+Commit: Bi Wu <biwu85@gmail.com>
+
+    vmctx: record the boot-recovery discipline and the session-42d handoff frontier
+    
+    The session handoff documents the program breadth results, the reverted
+    clock experiments, and the next design step (guest-clock emulation on the
+    destination); PITFALLS gains the boot-recovery rules a mismatched
+    /boot pair taught. Documentation only.
+
+commit efa6f7bd81fe777b8a844dcac3c3f7fcb2da8bdc
+Author: Bi Wu <biwu85@gmail.com>
+Commit: Bi Wu <biwu85@gmail.com>
+
+    vmctx: live guest clocks two ways, honest fork exit codes, and the breadth harness doubled
+    
+    The vDSO fix (session 43, HANDOFF-session43.md): when source and
+    destination run the same kernel release, vmremote serves the guest's
+    [vvar]/[vvar_vclock]/[vdso] from the destination's OWN live pages and a
+    refresher re-pokes the data pages 3x/s; when the releases differ, vmhome
+    hides the vDSO from the first image (auxv AT_SYSINFO_EHDR -> AT_IGNORE at
+    the exec stop, [vdso]/[vvar] dropped from the first layout) so clocks go
+    by forwarded syscall. tests/vd1.c gates both arms in the suite.
+    
+    vmremote also stops adopting a forked child's deliberate non-zero exit as
+    the run's status: only a context that JOINED an address space is a thread
+    whose death the run must report.
+    
+    tests/progs.sh grows from 30 to 66 shapes plus a KNOWN_GAPS ledger; the
+    new cases carry the reproducers for the standing families (lddnames,
+    nc1, gdbbt, stracec). runany-x.sh/xrun.sh pass the destination's release
+    for the vDSO decision; the 7.0.14 kernel patch is regenerated with the
+    fork-wipe map comment adopted from the box tree.
+    
+    Gates: loopback suite 120/0 (40 cases x 3), cross suite 40/0,
+    progs 56/6 strict with every strict failure in the one standing
+    deep-teardown family.
+
+commit 48846d0d10686e1e0cda23750198df68ab6daf36
+Author: Bi Wu <biwu85@gmail.com>
+Commit: Bi Wu <biwu85@gmail.com>
+
+    vmctx: a fork copy is never owed zeros -- the TLS-zeros producer inside the 242 family
+    
+    A fork child's inherited page whose bytes were on neither machine's
+    record was zero-landed by vmhome's fresh-anon fallthrough; measured on
+    the new dcpi reproducer as the child dying in __libc_fork writing
+    self->robust_head off a NULL THREAD_SELF (its TLS page read as zeros).
+    vmhome now reads the PARENT's own memory through its task and lands
+    those bytes in the child; zeros remain only for a parent that truly has
+    nothing anywhere. (The obvious alternative -- let the child's kernel COW
+    serve it -- was built and refuted in the same sitting: a page the other
+    machine held at clone time is a hole in the parent's mm here, and the
+    COW of a hole is the zero page.)
+    
+    With it, the deep-teardown family's strict failures resolve into two
+    pre-existing named holes (the roaming argv-stale exec 127s and the
+    parked orphan-service 251s); tclsum/dcpi/flock2 go 6/6 where they
+    flaked, and HANDOFF-session43.md carries the full taxonomy, the nc1
+    mechanism, and the snapshot-destruction ledger entry.
+    
+    Gates: loopback suite 120/0, cross suite 40/0, progs 60/2 with both
+    strict failures the argv-stale hole in its stdout-differs disguise.
+
+commit cd2b2525434f5d9f71ccb48e831cb0a3958415aa
+Author: Bi Wu <biwu85@gmail.com>
+Commit: Bi Wu <biwu85@gmail.com>
+
+    vmctx: JIT runtimes join the breadth harness -- runtime-generated code runs
+    
+    nodejs 22 (V8), ruby 3.3 (YJIT) and lua 5.4, four cases: a hot loop V8
+    tiers up, four V8 worker threads over eval'd code, a YJIT loop, and lua.
+    First shape in the harness where the program WRITES the code it executes
+    (mmap RW -> write -> mprotect RX -> jump); all four pass, so runtime code
+    generation works end-to-end through the serve chain, protections
+    included. Under load the node cases flake into the standing deep-teardown
+    thread-list class at ~1/6-1/12 -- V8's worker churn is now that class's
+    cheapest reproducer, and the case comments carry the corpse signature.
+    
+    progs.sh is 70 cases; the full campaign reads 63/3 with every strict
+    failure attributed to a named standing class.
+
+commit d78f5745980cf49460c0965a65830d92ddd524d6
+Author: Bi Wu <biwu85@gmail.com>
+Commit: Bi Wu <biwu85@gmail.com>
+
+    vmctx: the fork-wipe re-measured and re-refuted -- the blocker is recursive
+    
+    With pull-through-parent closing one of the two holes that killed the
+    session-42c fork wipe, the anon-only variant was rebuilt (kernel #173)
+    and measured against today's serve chain. Light pipelines passed; the
+    spawn-heavy shapes brought the fork-TLS NULL crash back, and the corpse
+    names the remaining blocker exactly: under the wipe the serve is
+    RECURSIVE -- a wiped child's fault needs the parent's page, wiped at its
+    own fork, whose read faults the parent needing the grandparent's, up the
+    chain to the first context -- and the source's single-level parent read
+    cannot satisfy that, so the fallthrough is still zeros. Reverted the
+    same hour (the running kernel is the proven code again, build #174);
+    vmctx_copy_task's comment and HANDOFF-session43.md carry the result.
+    The argv-stale hole's price is now exact: source-side nested
+    parent-chain fault service, or a one-step chain walk like the
+    destination's cow_give_from_chain.
+    
+    Gates after the revert: suite 40/0, the previously-wedged shapes
+    (gcc, make, pipes, gitwork) all green.
+
+commit fe2f0777aeda71f102f6d2b0a3e61bab1fe17f20
+Author: Bi Wu <biwu85@gmail.com>
+Commit: Bi Wu <biwu85@gmail.com>
+
+    vmctx: two source-side chain walks, and the wipe campaign's ledger closed at one remaining piece
+    
+    vmhome now finds a fork copy's inheritance the way the destination
+    always has -- by walking the chain, one step: the fault-service branch
+    lands the nearest ancestor whose mm holds the page (found by pagemap,
+    never by a read, which would create one), and ctx_page's serve answers
+    an ABSENT-after-nocow the same way with a raw no-take copy. Each
+    replaces a zero that used to be the fallthrough, so both stay regardless
+    of what uses them next.
+    
+    What needs them next is the fork wipe. Iteration 3 (#175, wipe plus
+    these walks) moved the failure to its last producer: a page held only by
+    the FIRST context's guest on the other machine, refused by the
+    destination's own chain-give because its gate wants the fork-protect
+    mark on an intermediate ancestor that never held the page. Three
+    iterations, three requirements: the file fallback (closed by
+    pull-through-parent), the recursive parent read (closed by these walks),
+    and the destination's chain-give gate (open, bounded, userspace). The
+    kernel is reverted to the proven code; vmctx_copy_task's comment and
+    HANDOFF-session43.md carry the full map.
+    
+    Gates on the revert with both walks in: the wipe's own caselist
+    (gcc, make, pipes, gitwork, dcpi, tclsum) 7/0, suite 40/0.
+
+commit 63ecd4cfd93c4b5b359ded705f418a79925a9d89
+Author: Bi Wu <biwu85@gmail.com>
+Commit: Bi Wu <biwu85@gmail.com>
+
+    vmctx: the escalated COW break, two teardown escapes, and the ledger converged to one frontier
+    
+    The fork-wipe campaign's fourth iteration completed its serve chain: a
+    COWBREAK carrying rq.len == 1 is the source declaring its own routes
+    exhausted -- the one fact that licences relaxing the strict give gate --
+    and the destination then serves the nearest ancestor page it can READ,
+    protect mark or not. Wired at the page-channel handler, the
+    destination's chunk and pull retries (after the nocow re-ask proves the
+    source empty-handed), and vmhome's escalation; under a wipe build the
+    whole toolchain ran green on it. Two teardown escapes measured out of
+    the same corpses stay with it: a dead page-service port is declared gone
+    after twenty consecutive refusals instead of holding a finished run for
+    the watchdog, and a context that ignores three KILL answers is ended
+    with SIGKILL rather than re-delivering the same fault for ever.
+    
+    The wipe itself is reverted again -- its remaining cost is not bytes but
+    the teardown ORDER, and that is the standing lifecycle frontier: the
+    netsurf CLAIM stall, the session-37 join residual, the parked daemonize
+    wall and the wipe's last blocker are one protocol hole (nothing defines
+    in-flight state when a context's counterpart leaves). vmctx_copy_task's
+    comment carries the four-iteration map; HANDOFF-session43.md carries the
+    convergence statement and the cheap reproducers.
+    
+    Gates on the proven kernel with all of it in: suite 120/0 x3, cross
+    40/0, progs 63/3 with every strict failure in a named standing class.
+
+commit b31a5bd5e8abbd607e63780c84cd61867cd0bb53
+Author: Bi Wu <biwu85@gmail.com>
+Commit: Bi Wu <biwu85@gmail.com>
+
+    vmctx: the lifecycle design -- a context's service outlives everything that made it
+    
+    Three rules, one change. The tree is the service lifetime: vmremote's
+    main waits for every forked context's service to drain, bounded by
+    liveness rather than a clock, with the counter-leak case the old
+    two-second bound existed for detected by audit instead. A dead monitor
+    is a missing monitor: the kernel publishes the event and waits for a
+    successor under the fault deadline instead of improvising an ACT_SELF
+    that is an unrecoverable -14 for a redirected context -- and each forked
+    context's monitor is handed from the thread that spawned it to the
+    thread that services it, so a guest enters exactly when its own watcher
+    is in place and can never outrun or outlive it. Claims and transits die
+    with their wire: a service that breaks out settles the claim it wrote,
+    and unacked single-page transits are settled THEIRS when the connection
+    that committed them closes.
+    
+    Measured on kernel #179: nc1 9/9 -- first passes ever, the orphaned
+    server survives its parent; sort 9/9 against a 2-in-12 history; and
+    lddnames 6/6, which rewrites a diagnosis -- the "argv-stale exec hole"
+    that four kernel wipe builds chased was the clone-window race, closed by
+    the ordering alone. All three graduate from KNOWN_GAPS to strict.
+    
+    Gates: suite 120/0 x3, cross 40/0, and the breadth harness at
+    66 pass / 0 fail -- the first zero-failure full campaign on record.
+    Remaining known gaps: gpgsym (a live-connection claim storm, the last
+    coat of the old wall) and the two ptrace-semantics cases.
+
+commit 3ab44c40155a16d9a35c885c1f82d54552d3211c
+Author: Bi Wu <biwu85@gmail.com>
+Commit: Bi Wu <biwu85@gmail.com>
+
+    vmctx: the ghost claim heals -- the last eternal answer in the serve table
+    
+    The stuck-page storm finally sat still for its photograph: gpg's agent
+    spawn reproduced it deterministically, and the armed page log named the
+    branch -- 169,826 serves answering CLAIMING with the record reading
+    OURS. The serve table's HOME-and-absent case imagined "a local fill is
+    landing" with no bound, while the fill it imagined was the guest fault
+    its own refusals were starving. TRANSIT already healed by age and a
+    claim now settles with its service; this was the one answer left that
+    could be given forever.
+    
+    The heal counts the refusals in the entry's sum field -- dead weight for
+    a page with no bytes to sum, written through the same outcome CAS every
+    serve already takes, because a clock cannot age what every refusal
+    restamps -- and at 255 consecutive absent-asks declares the claim a
+    ghost: REMOTE, ABSENT, and the asker fills and holds the page exactly as
+    the record then says.
+    
+    Measured: the storm class is dead -- one gpg run went from 267k faults
+    to 4.6k with 23 heals and zero CLAIMING lines, and an A/B over the
+    newly-strict cases shows every remaining flake occurring with zero
+    heals. What is left of gpgsym is a new, quieter corpse (the agent up and
+    ticking clock_nanosleep while gpg waits on its socket -- application
+    protocol progress, its own investigation), and lddnames keeps a residual
+    empty-stream producer past the lifecycle fix, noted at its ledger entry.
+    
+    Gates on kernel #180: suite 120/0 x3, cross 40/0.
+
+commit f92c6d570e18e8420431df0b0284e271938f6fd6
+Author: Bi Wu <biwu85@gmail.com>
+Commit: Bi Wu <biwu85@gmail.com>
+
+    vmctx: loans die with their range -- on a real unmap, and only there
+    
+    A HARD vacate now clears the lent[] loans in its range (the documented
+    "lent[] is stale" trap's repair): a recycled V8 worker stack used to
+    consult the old tenant's loan, dial a shadow whose channel had died,
+    and zero-fill the live stack. The first cut cleared on DISCARDS too and
+    fx1 refuted it at one-in-six -- a DONTNEED kills content, not
+    relationships; the machine the loan names still holds its copy, and
+    clearing the record under it grants the next write against a holder
+    that was never told. Content dies soft; relationships die hard. fx1
+    12/12 with the distinction, and the LOST line is gone from every
+    thread-churn corpse.
+    
+    gpgsym's last corpse names a time-domain gap, recorded not built:
+    forwarded cputime clocks report the parked source task, not the guest's
+    real burn, and the agent's npth ticker -- scheduling by
+    CLOCK_THREAD_CPUTIME_ID -- exits mid-run and takes the timed event loop
+    with it. The fix is cputime virtualization in the monitor's accounting.
+    
+    Performance on kernel #180 with everything in (HANDOFF table): loopback
+    compute 99.7% of native, syscall 66-80 us, fault 38-91 us; cross
+    compute 98.5% of the destination's own native, syscall 220 us against
+    259 last session and 482 in the #60 era, fault ~390 us.

@@ -1,0 +1,44 @@
+#!ipxe
+# LAN-boot: loaded by iPXE over HTTP. Edit this file to change what gets booted.
+# ${cwduri} is the URL directory this script was fetched from
+# (http://<server>:8080/), so everything below stays on the right server
+# without depending on any DHCP-provided variable.
+
+set base ${cwduri}
+
+# ---- Image selection ---------------------------------------------------
+# To boot your own image, drop the files into the http/ folder and point
+# these two variables at them (paths are relative to the http/ folder).
+# Currently: the kernel rebuilt from source in src/linux-6.18.35
+# (tools/build-kernel.sh). Original Alpine images remain as *-lts —
+# switch the three references back to boot the stock image.
+set kernel_img vmlinuz-custom
+set initrd_img initramfs-custom
+
+# Kernel command line:
+#  - modloop:      squashfs with all kernel modules (drivers) for vmlinuz-lts
+#  - alpine_repo:  package repo used to build the root filesystem in RAM.
+#                  Local mirror works fully offline; switch to
+#                  https://dl-cdn.alpinelinux.org/alpine/latest-stable/main
+#                  if you prefer pulling from the internet.
+# modloop_verify=no: our rebuilt modloop is not signed with Alpine's key
+# apkovl:    overlay that sets up passwordless SSH (our key) + auto-loads vmctx
+# ssh_key=1: tells the initramfs to install openssh and enable sshd
+set cmdline ip=dhcp modules=loop,squashfs,sd-mod,usb-storage console=tty0 modloop=${base}modloop-custom modloop_verify=no alpine_repo=${base}alpine/main apkovl=${base}target.apkovl.tar.gz ssh_key=1
+# ------------------------------------------------------------------------
+
+echo
+echo ================= LAN boot =================
+echo Server : ${base}
+echo Kernel : ${kernel_img}
+echo Initrd : ${initrd_img}
+echo ============================================
+echo
+
+kernel ${base}${kernel_img} ${cmdline} || goto failed
+initrd ${base}${initrd_img} || goto failed
+boot || goto failed
+
+:failed
+echo Boot failed - dropping to iPXE shell (type 'reboot' to restart)
+shell

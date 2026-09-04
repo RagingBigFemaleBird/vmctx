@@ -1,0 +1,36 @@
+#!ipxe
+# Embedded in every iPXE binary we serve, so a client finds the LAN-boot script
+# without depending on what the site's own DHCP server says. Keep all three
+# loaders (undionly.kpxe, ipxe.efi, snponly.efi) built with this: one built
+# without it falls back to iPXE's stock autoboot, which in proxy-DHCP mode never
+# learns our server at all.
+
+dhcp
+echo LAN-boot: proxydhcp/next-server = ${proxydhcp/next-server} , next-server = ${next-server} , filename = ${filename}
+
+# Check each setting before building a URL out of it. An unset one yields
+# "http://:8080/boot.ipxe" — a URL with no host — and iPXE then tries to resolve
+# the empty name and reports "DNS name does not exist" (error 3e11613b). That
+# reads like a broken name service and is really an empty variable.
+isset ${proxydhcp/next-server} && goto proxy || goto trynext
+
+:proxy
+chain --replace http://${proxydhcp/next-server}:8080/boot.ipxe || goto trynext
+
+:trynext
+isset ${next-server} && goto direct || goto tryfilename
+
+:direct
+chain --replace http://${next-server}:8080/boot.ipxe || goto tryfilename
+
+:tryfilename
+# dnsmasq hands an iPXE client the whole boot script URL as the bootfile name,
+# so it is worth a try — but only when it is one. A bare name here is the
+# bootloader we are already running, and chaining that is a boot loop.
+iseq ${filename} undionly.kpxe && goto failed || iseq ${filename} ipxe.efi && goto failed || iseq ${filename} snponly.efi && goto failed || isset ${filename} && chain --replace ${filename} || goto failed
+
+:failed
+echo LAN-boot: no boot server found — none of proxydhcp/next-server,
+echo next-server, or a URL in filename. Is start.sh running on the server,
+echo and is this machine on the same subnet as it?
+shell

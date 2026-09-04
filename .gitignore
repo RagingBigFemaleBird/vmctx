@@ -1,0 +1,60 @@
+# --- Third-party sources & build trees (downloaded/compiled, not authored) ---
+/src/
+
+# --- Compiled server binaries (rebuilt from src/) ---
+/bin/dnsmasq
+
+# --- iPXE bootloaders (built from src/ipxe) ---
+/tftp/*.kpxe
+/tftp/*.efi
+
+# --- Boot images & mirror served over HTTP (built by tools/, large) ---
+/http/vmlinuz-lts
+/http/vmlinuz-custom
+/http/initramfs-lts
+/http/initramfs-custom
+/http/modloop-lts
+/http/modloop-custom
+# The copy kept aside before staging a new kernel for the Intel target. That
+# box netboots, so http/vmlinuz-custom is its ONLY kernel image and staging
+# over it destroys the working one; if the new build does not come up there is
+# no console and no remote power control. See netboot-kernel-has-no-undo.
+/http/vmlinuz-custom.known-good
+/http/initramfs-custom.known-good
+/http/modloop-custom.known-good
+/http/alpine/
+# vmctx module + tools staged for HTTP serving (built by vmctx/build.sh)
+/http/vmctx/
+
+# --- Runtime state ---
+/logs/
+/config/dnsmasq.conf
+
+# SSH private key for the lab target (secret; regenerate with ssh-keygen).
+# The matching public key is tracked in vmctx/apkovl/root/.ssh/authorized_keys.
+/config/id_vmctx
+/config/id_vmctx.pub
+
+# Generated apkovl overlay (built by vmctx/make-apkovl.sh)
+/http/target.apkovl.tar.gz
+
+# --- Kernel module build artifacts ---
+*.o
+*.ko
+*.mod
+*.mod.c
+*.mod.o
+*.symvers
+*.order
+.*.cmd
+*.a
+.tmp_versions/
+modules.builtin*
+
+# --- Compiled userspace tools (built by vmctx/build.sh) ---
+/vmctx/build/
+
+# --- Editor/OS noise ---
+*.swp
+*~
+.DS_Store

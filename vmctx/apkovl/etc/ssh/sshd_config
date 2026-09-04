@@ -1,0 +1,9 @@
+# vmctx lab target — minimal sshd config.
+# Root login by key only (the key comes from the apkovl authorized_keys).
+Port 22
+PermitRootLogin prohibit-password
+PubkeyAuthentication yes
+PasswordAuthentication no
+AuthorizedKeysFile .ssh/authorized_keys
+UseDNS no
+# Host keys are generated on first start by the sshd init script (ssh-keygen -A).

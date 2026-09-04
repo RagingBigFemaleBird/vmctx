@@ -1,0 +1,42 @@
+commit c99088a345fcae5d4ef546334395ff92e6a07026
+Author: Bi Wu <biwu85@gmail.com>
+Commit: Bi Wu <biwu85@gmail.com>
+
+    vmctx: native VM contexts -- run a program whose memory and kernel live on another machine
+    
+    A VM context is a first-class Linux process whose instructions execute
+    under hardware virtualization (SVM here) while its address space is
+    owned and served elsewhere. This kernel provides:
+    
+    - The vmctx_run/vmctx_ctl syscalls: context lifecycle, a monitor that
+      services a context's events (faults, syscalls, exceptions), register
+      and memory access, page take/serve/land/protect operations, and
+      assisted syscalls executed in the context's own task, where the
+      program's arguments mean what the program meant.
+    
+    - The per-address-space page record: an xarray beside the page tables
+      holding each page's ownership state (HOME/REMOTE/CLAIM/TRANSIT), with
+      fault-path claims taken before the monitor is asked and sibling
+      faults waiting in-kernel for a transition in flight.
+    
+    - Process-lifecycle integration: fork copies the context and records
+      the child's host-namespace pid for the monitor (a clone's own return
+      value is namespace-relative); exec marks the context for rebuild;
+      exit routes teardown through the protocol.
+    
+    - The mm-mutation change log: every vacated range of a context's
+      address space is stamped by a per-mm event counter at the event and
+      drained by the monitor, so destruction propagates by what the mm did,
+      never by a list of syscall numbers, and a stale vacate can always be
+      ordered against the construction that superseded it.
+    
+    - Guarded memory supply: a context's memory is never invented locally.
+      Foreign reads and attributed third-party writes of missing pages are
+      refused; shmem hole allocation on a live context's object is refused
+      to foreign readers; a fault the monitor declined that the local
+      kernel then cannot serve is reported a second time before the context
+      is ended. The guest register file owns FS/GS bases. A census at
+      handle_mm_fault accounts every path into a context's memory.
+    
+    Companion userspace (vmhome/vmremote) and tests live in the lan-boot
+    repository; this tree's delta ships there as kernel-patches/linux-7.0.14.

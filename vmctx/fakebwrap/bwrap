@@ -1,0 +1,21 @@
+#!/bin/bash
+# A bwrap that does not sandbox: find the command bwrap was asked to run
+# (glycin passes the loader binary after its options) and exec it directly.
+# Equivalent to GlySandboxSelector::NotSandboxed, from outside the library --
+# glycin 2.1.1 selects its sandbox by g_get_prgname() with no env override,
+# so the PATH shim is the only external lever (session 41f).
+#
+# This is the DEMO lever (browser-demo.sh): the sandboxed path works under
+# vmctx up to the dbus-launch wall (HANDOFF-session42.md), which is recorded
+# and parked; the demo runs the browser without it.
+args=("$@")
+for ((i=0; i<${#args[@]}; i++)); do
+  a=${args[$i]}
+  case "$a" in
+    /usr/libexec/glycin-loaders/*|/usr/lib/*/glycin-loaders/*)
+      exec "${args[@]:$i}" ;;
+  esac
+done
+# Not a glycin invocation: refuse rather than half-sandbox.
+echo "fake bwrap: no loader command found in: $*" >&2
+exit 127
