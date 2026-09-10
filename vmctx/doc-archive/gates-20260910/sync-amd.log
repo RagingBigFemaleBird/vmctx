@@ -1,0 +1,23 @@
+== syncing tree to 10.0.0.229
+== removing sources this tree no longer has (user/, tests/)
+== rebuilding userspace + tests on 10.0.0.229
+make: *** [Makefile:94: check-host] Error 1
+suite: native monitor controls failed
+suite: build failed; no runtime result is valid for this source
+
+== verifying amd (10.0.0.229, expecting 7.0.14-vmctx-audit-recall1-terminal222, syscalls 472/473)
+   this tree's source id: 75915bd28abd
+  ok        kernel 7.0.14-vmctx-audit-recall1-terminal222
+  ok        vmctx module loaded
+  ok        /home/biwu/audit-20260907/terminal222-native/vmctx.ko vermagic 7.0.14-vmctx-audit-recall1-terminal222 matches the running kernel
+  ok        loaded module srcversion 665E2B59F7ADD5DFE313DB5 is /home/biwu/audit-20260907/terminal222-native/vmctx.ko
+  ok        loaded module built from this tree's kernel/ (srcversion 665E2B59F7ADD5DFE313DB5)
+  ok        vmremote built from this tree (75915bd28abd)
+  ok        vmhome   built from this tree (75915bd28abd)
+  ok        vmremote compiled for syscalls 472/473
+
+== amd: everything deployed matches this tree
+
+real	0m42.151s
+user	0m0.162s
+sys	0m0.107s

@@ -1,0 +1,10 @@
+=== gate start 2026-09-10T00:21:19 boot=fca91ceb-77d2-4bed-842d-b4f3037301d5 kernel=7.0.14-vmctx-audit-recall1-terminal222
+counters before: 0 0 0 1 1 0 3 
+D-state before: 
+round 1 (1 at a time)
+suite: 78 passed, 0 failed; 0 known gaps still failing, 0 now passing
+=== suite rc=0 2026-09-10T00:26:33
+counters after:  0 0 0 1 1 0 3 
+D-state after:   95144 D    kworker/0:0+events;
+boot after: fca91ceb-77d2-4bed-842d-b4f3037301d5
+=== gate end

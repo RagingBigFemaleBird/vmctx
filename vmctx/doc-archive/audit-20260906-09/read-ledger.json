@@ -1,0 +1,2500 @@
+{
+  "root_head": "99ecf75bd059e0c8a01493abace7eb2495ff7c62",
+  "files": [
+    {
+      "path": ".gitignore",
+      "lines": 60,
+      "sha256": "1fcfa259603eba02ecbf8ddedb30fe0d43881c965b9f41a05ed7bafa615143ba",
+      "reviewed": [
+        [
+          1,
+          60
+        ]
+      ]
+    },
+    {
+      "path": "README.md",
+      "lines": 190,
+      "sha256": "dcbd5002db2be0ec5a6f83467d44c2dd07a1693d844c262cd96a341c79bf1b44",
+      "reviewed": [
+        [
+          1,
+          190
+        ]
+      ]
+    },
+    {
+      "path": "avm.md",
+      "lines": 44,
+      "sha256": "62605f6b31bc7e0a373e30ec339e4fbcff4a088e62a900ad78c98f7601ada53d",
+      "reviewed": [
+        [
+          1,
+          44
+        ]
+      ]
+    },
+    {
+      "path": "config/dnsmasq.conf.template",
+      "lines": 46,
+      "sha256": "dc2e493f63d8906ea24713974730da775a75a7f93dd7e37d0676711ec37f397b",
+      "reviewed": [
+        [
+          1,
+          46
+        ]
+      ]
+    },
+    {
+      "path": "config/embed.ipxe",
+      "lines": 36,
+      "sha256": "d8b7c84c944576f900685672ad8ace7b914b8a205ea898e826fee035972228a9",
+      "reviewed": [
+        [
+          1,
+          36
+        ]
+      ]
+    },
+    {
+      "path": "http/boot.ipxe",
+      "lines": 44,
+      "sha256": "eede8044fe4b523985b92cecacbf55d5f7bb477bab156f849f50ea4fc2e3bf42",
+      "reviewed": [
+        [
+          1,
+          44
+        ]
+      ]
+    },
+    {
+      "path": "page.html",
+      "lines": 6,
+      "sha256": "8cf1a37e0c38adca131af770b82382c66dc4c6d845c56e5d1b391bdc512747dd",
+      "reviewed": [
+        [
+          1,
+          6
+        ]
+      ]
+    },
+    {
+      "path": "start.sh",
+      "lines": 82,
+      "sha256": "e4efecf5e090eab0c54b41f3021aa452588e6b15bb69eee2a030091bd9f51ee6",
+      "reviewed": [
+        [
+          1,
+          82
+        ]
+      ]
+    },
+    {
+      "path": "stop.sh",
+      "lines": 22,
+      "sha256": "f070b8fd87339f5c07fde4e4e5f49546529bce1d1eb26c319c3a691ea1b98e98",
+      "reviewed": [
+        [
+          1,
+          22
+        ]
+      ]
+    },
+    {
+      "path": "tools/build-kernel.sh",
+      "lines": 130,
+      "sha256": "193a47edd14b5809de7afbc211b397321104027d091b60b10272e55f0e2eb790",
+      "reviewed": [
+        [
+          1,
+          130
+        ]
+      ]
+    },
+    {
+      "path": "tools/mirror-apks.py",
+      "lines": 116,
+      "sha256": "752fa4da124fbcfa9e34f4ab8c683ee77c5a92381838b76372bd21a151c0b204",
+      "reviewed": [
+        [
+          1,
+          116
+        ]
+      ]
+    },
+    {
+      "path": "tools/update-alpine.sh",
+      "lines": 14,
+      "sha256": "99a43c185b4ef19613548f694e9d35a29a354d07f04705be1100fdf7a8692d23",
+      "reviewed": [
+        [
+          1,
+          14
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/ARCHITECTURE.md",
+      "lines": 373,
+      "sha256": "dd6b405a5eb9997ea02bae5e76eec9e740f573c2843f7f553390ac99d85afa18",
+      "reviewed": [
+        [
+          1,
+          373
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/AUDIT.md",
+      "lines": 966,
+      "sha256": "6970d46f3a4399be1a6f37ebf220c1b29ae69580049d0e15a0dd8c41c415e6be",
+      "reviewed": [
+        [
+          1,
+          966
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/HANDOFF.md",
+      "lines": 521,
+      "sha256": "075ecd6c2245d54d9fee5b68e20544b972ad116f7be601f4ca4da47d735f6724",
+      "reviewed": [
+        [
+          1,
+          521
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/HISTORY.md",
+      "lines": 144,
+      "sha256": "c1d60098a707ddc42d61a90d8a0e1ba658cd668c9467eae3e8a7c73d0bd727e5",
+      "reviewed": [
+        [
+          1,
+          144
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/NOTES.md",
+      "lines": 1665,
+      "sha256": "cb831281506fe8da438cbcf79ee5a2bbf4b454fdc7c66fec0eaed1eb77931b68",
+      "reviewed": [
+        [
+          1,
+          1665
+        ]
+      ],
+      "review_method": "Full chronological read; historical causal claims treated as hypotheses unless reproduced in this audit."
+    },
+    {
+      "path": "vmctx/PITFALLS.md",
+      "lines": 202,
+      "sha256": "cb2203fe858582fdd604951e468291cab8692209dba26c89a2d25ed95c7261d8",
+      "reviewed": [
+        [
+          1,
+          202
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/PRINCIPLES.md",
+      "lines": 200,
+      "sha256": "a447bdb71940fff3f9fa2ef82d73f3312dd9c217103126df0be567f5a7fad0fc",
+      "reviewed": [
+        [
+          1,
+          200
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/REDESIGN.md",
+      "lines": 529,
+      "sha256": "95e277c0839b3a93dfd2c3e25c5a304693126a2177668f766415c7bbb06c5173",
+      "reviewed": [
+        [
+          1,
+          529
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/RUNNING.md",
+      "lines": 257,
+      "sha256": "0ae4456cd0193aa1dd6db0466a1a68805a6d2864c226732748c16fa88ffe9af6",
+      "reviewed": [
+        [
+          1,
+          257
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/apkovl/etc/.default_boot_services",
+      "lines": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "reviewed": []
+    },
+    {
+      "path": "vmctx/apkovl/etc/apk/world",
+      "lines": 1,
+      "sha256": "4809f22648e57e2382a407cbf6930c23c697f903afba79031a1970404f97ef90",
+      "reviewed": [
+        [
+          1,
+          1
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/apkovl/etc/hostname",
+      "lines": 1,
+      "sha256": "e4bd077e6a17f698491a1367ce4f7d2d865f6d0e662fc741481e3fa5d90c08db",
+      "reviewed": [
+        [
+          1,
+          1
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/apkovl/etc/local.d/10-vmctx.start",
+      "lines": 31,
+      "sha256": "c06ba1507997fd43f500f84fed60231b9bc07b8b198b45a10b12a65dca412cb4",
+      "reviewed": [
+        [
+          1,
+          31
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/apkovl/etc/ssh/sshd_config",
+      "lines": 9,
+      "sha256": "c2c124976ab2e838049d0ce9c5585b2a255a9387f851c0a7c6d6ccadff6b2caf",
+      "reviewed": [
+        [
+          1,
+          9
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/apkovl/root/.ssh/authorized_keys",
+      "lines": 1,
+      "sha256": "16aa7fcb496436ebfd9ff0d55b6806bbc9b5681aae8b7e558e5c3f958a14fb80",
+      "reviewed": []
+    },
+    {
+      "path": "vmctx/browser-demo.sh",
+      "lines": 91,
+      "sha256": "cb2a0e95eb9393fee61ebe93da545cf0e2b912a21ba09eb01bcd46e3dc5d78e4",
+      "reviewed": [
+        [
+          1,
+          91
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/browser-run.sh",
+      "lines": 167,
+      "sha256": "a926415855c49e2b92f3f8687898dee520ed2c63978a04c5cd96313fc930efb1",
+      "reviewed": [
+        [
+          1,
+          167
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/build.sh",
+      "lines": 60,
+      "sha256": "c0798f2c2a0b548688af9344d6d67eb3da99317d945fa795993663c4ab1d079d",
+      "reviewed": [
+        [
+          1,
+          60
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/demo/README.md",
+      "lines": 24,
+      "sha256": "134abff5f873b29e73baf1f612e0ca10b7432aaec99d57402dfbc25f05afca21",
+      "reviewed": [
+        [
+          1,
+          24
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/demo/lbrowser.sh",
+      "lines": 52,
+      "sha256": "e6fba5b328dce67704fb18f4554dbd7ac5916e820ed671def5259731b6a3b440",
+      "reviewed": [
+        [
+          1,
+          52
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/demo/lbrowser0.sh",
+      "lines": 55,
+      "sha256": "a024ff184afcac178a842c612ae7f11c4465b321c02c4c1bb871c6bcb2b0258b",
+      "reviewed": [
+        [
+          1,
+          55
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/demo/noshm.c",
+      "lines": 7,
+      "sha256": "6846ddb25e501ab56e9628807dd48f6dfe57d8582686b7b1f8facbd46e18a1cb",
+      "reviewed": [
+        [
+          1,
+          7
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/demo/xbrowser.sh",
+      "lines": 45,
+      "sha256": "c9c414106a9e7ec843b891ab64ac8d6fee4571d735a08e504e0d59ef3ba386d0",
+      "reviewed": [
+        [
+          1,
+          45
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/demo/xprep.sh",
+      "lines": 38,
+      "sha256": "a619307e61603e7f19fe94dcf475b41d4a415f4bda1884d4292f74e0550c881f",
+      "reviewed": [
+        [
+          1,
+          38
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/doc-archive/handoffs/HANDOFF-session27.md",
+      "lines": 141,
+      "sha256": "f1f557388fe72b706d002010ef55fa489230b993e7a94da87e4512e3c73d2d85",
+      "reviewed": [
+        [
+          1,
+          141
+        ]
+      ],
+      "review_method": "Full read; historical diagnoses, instructions and success claims treated as historical evidence, not current instructions or correctness proof."
+    },
+    {
+      "path": "vmctx/doc-archive/handoffs/HANDOFF-session28.md",
+      "lines": 128,
+      "sha256": "57f4638c122830b7c00ef8d381178bf2cd716e8f3524acd9443386db0f428dfa",
+      "reviewed": [
+        [
+          1,
+          128
+        ]
+      ],
+      "review_method": "Full read; historical diagnoses, instructions and success claims treated as historical evidence, not current instructions or correctness proof."
+    },
+    {
+      "path": "vmctx/doc-archive/handoffs/HANDOFF-session29.md",
+      "lines": 97,
+      "sha256": "4605e45976cc7be3e02e34df9e9059aaacd15606ec319326564aaab4a76c1d3c",
+      "reviewed": [
+        [
+          1,
+          97
+        ]
+      ],
+      "review_method": "Full read; historical diagnoses, instructions and success claims treated as historical evidence, not current instructions or correctness proof."
+    },
+    {
+      "path": "vmctx/doc-archive/handoffs/HANDOFF-session30.md",
+      "lines": 165,
+      "sha256": "ab4caf4d546514b44418e76546474823dc0c3c4ebd7328f35e363e9251952459",
+      "reviewed": [
+        [
+          1,
+          165
+        ]
+      ],
+      "review_method": "Full read; historical diagnoses, instructions and success claims treated as historical evidence, not current instructions or correctness proof."
+    },
+    {
+      "path": "vmctx/doc-archive/handoffs/HANDOFF-session31.md",
+      "lines": 162,
+      "sha256": "269ba5e67ed74cf29388ad8b24c605006a8066334426da20140f6d4f23115c91",
+      "reviewed": [
+        [
+          1,
+          162
+        ]
+      ],
+      "review_method": "Full read; historical diagnoses, instructions and success claims treated as historical evidence, not current instructions or correctness proof."
+    },
+    {
+      "path": "vmctx/doc-archive/handoffs/HANDOFF-session32.md",
+      "lines": 92,
+      "sha256": "726f21324b8f9e81865f5827a5974a94f80d75588a39242ec527756d03f7b2b8",
+      "reviewed": [
+        [
+          1,
+          92
+        ]
+      ],
+      "review_method": "Full read; historical hypotheses and instructions treated as evidence, not current instructions or correctness proof."
+    },
+    {
+      "path": "vmctx/doc-archive/handoffs/HANDOFF-session33.md",
+      "lines": 90,
+      "sha256": "0f6a6151039345b60fc7ad44709e7e7d4bba26988892bc7ebd2e46cba6fdf16b",
+      "reviewed": [
+        [
+          1,
+          90
+        ]
+      ],
+      "review_method": "Full read; historical hypotheses and instructions treated as evidence, not current instructions or correctness proof."
+    },
+    {
+      "path": "vmctx/doc-archive/handoffs/HANDOFF-session34.md",
+      "lines": 182,
+      "sha256": "84c83f6665ed96ca62263748e68fffce04a169bc4c45e0733991eb8afcc4b7c3",
+      "reviewed": [
+        [
+          1,
+          182
+        ]
+      ],
+      "review_method": "Full read; historical hypotheses and instructions treated as evidence, not current instructions or correctness proof."
+    },
+    {
+      "path": "vmctx/doc-archive/handoffs/HANDOFF-session35.md",
+      "lines": 190,
+      "sha256": "2431d87120532956c7f9abf8cc273c8abff8544806279559578609e8bb8c947a",
+      "reviewed": [
+        [
+          1,
+          190
+        ]
+      ],
+      "review_method": "Full read; historical hypotheses and instructions treated as evidence, not current instructions or correctness proof."
+    },
+    {
+      "path": "vmctx/doc-archive/handoffs/HANDOFF-session36.md",
+      "lines": 185,
+      "sha256": "d740eea715e3c81fd7aa006ffd295c2050eecce756e7b0e37802b39150a87a31",
+      "reviewed": [
+        [
+          1,
+          185
+        ]
+      ],
+      "review_method": "Full read; historical hypotheses and instructions treated as evidence, not current instructions or correctness proof."
+    },
+    {
+      "path": "vmctx/doc-archive/handoffs/HANDOFF-session37.md",
+      "lines": 96,
+      "sha256": "6f36de1315b0877b362bcfc6bf1391a519e2e900b7336d494afbdd8497a8695a",
+      "reviewed": [
+        [
+          1,
+          96
+        ]
+      ],
+      "review_method": "Full read; historical diagnoses and instructions treated as evidence, not current instructions or correctness proof."
+    },
+    {
+      "path": "vmctx/doc-archive/handoffs/HANDOFF-session38.md",
+      "lines": 169,
+      "sha256": "a9e6b55c6df5407e5f181b8707f756c577788b3add802f12cc85124d8e548d9a",
+      "reviewed": [
+        [
+          1,
+          169
+        ]
+      ],
+      "review_method": "Full read; historical diagnoses and instructions treated as evidence, not current instructions or correctness proof."
+    },
+    {
+      "path": "vmctx/doc-archive/handoffs/HANDOFF-session39.md",
+      "lines": 288,
+      "sha256": "01ed77e311a2ebac34b110005c0751246f4a2a7aebeb555a6379436b7f91c5a1",
+      "reviewed": [
+        [
+          1,
+          288
+        ]
+      ],
+      "review_method": "Full read; historical diagnoses and instructions treated as evidence, not current instructions or correctness proof."
+    },
+    {
+      "path": "vmctx/doc-archive/handoffs/HANDOFF-session40.md",
+      "lines": 450,
+      "sha256": "cfe4625e5cb6c35be27861be172e888f9a1bf0483b0db206ed1fd0d52e7b2a83",
+      "reviewed": [
+        [
+          1,
+          450
+        ]
+      ],
+      "review_method": "Full read; historical diagnoses and instructions treated as evidence, not current instructions or correctness proof."
+    },
+    {
+      "path": "vmctx/doc-archive/handoffs/HANDOFF-session41.md",
+      "lines": 459,
+      "sha256": "ec290f1c770fc2ef0fe6e1765a86d2726b064c87c8ed7b549ecdf96a7e763ff1",
+      "reviewed": []
+    },
+    {
+      "path": "vmctx/doc-archive/handoffs/HANDOFF-session42.md",
+      "lines": 539,
+      "sha256": "3412ec4c942b8d15daca27ab0887023ce80cc174ba66e15196106d4b1d92d427",
+      "reviewed": []
+    },
+    {
+      "path": "vmctx/doc-archive/handoffs/HANDOFF-session43.md",
+      "lines": 560,
+      "sha256": "3458ceef14092ecdd35b5f77c10de13e3aa19f399de3d5b876beb0aab53a78d7",
+      "reviewed": []
+    },
+    {
+      "path": "vmctx/doc-archive/handoffs/HANDOFF-session45.md",
+      "lines": 122,
+      "sha256": "73ad2d7ba7ebfe0c35b94b7561411f5a95fdc3a9e9f5ff0d66244cd305798411",
+      "reviewed": []
+    },
+    {
+      "path": "vmctx/doc-archive/handoffs/HANDOFF-session46.md",
+      "lines": 242,
+      "sha256": "66f573588ffe20510535657ec21959b210c43d7b46decfe8b5eaac41bae57058",
+      "reviewed": []
+    },
+    {
+      "path": "vmctx/doc-archive/kernel-log-6.18.35-presquash.txt",
+      "lines": 954,
+      "sha256": "a6785065046306748ee218db7c4f62c4d798094d1ede4314bccf6e672a4f4fc1",
+      "reviewed": []
+    },
+    {
+      "path": "vmctx/doc-archive/kernel-log-7.0.14-presquash.txt",
+      "lines": 2699,
+      "sha256": "1ced570a535fa0ca152cb15628353ef6ec87d35545444ee575a2f90619668e4d",
+      "reviewed": []
+    },
+    {
+      "path": "vmctx/doc-archive/kernel-log-7.0.14-sessions43-44.txt",
+      "lines": 42,
+      "sha256": "6c17a133a95d9d27e5e376647f237891b3c2cb3a6065cbe80342bc717810d351",
+      "reviewed": []
+    },
+    {
+      "path": "vmctx/doc-archive/repo-log-presquash.txt",
+      "lines": 3533,
+      "sha256": "9a9bd61c4d61d30958da4ab4c86f502d140f625b41d4a177000a6cc007016aa5",
+      "reviewed": []
+    },
+    {
+      "path": "vmctx/doc-archive/repo-log-sessions43-44-presquash.txt",
+      "lines": 280,
+      "sha256": "2a8d2253896386fa31a92ae5ac555333147631b33391450258748d291fd05ec4",
+      "reviewed": []
+    },
+    {
+      "path": "vmctx/doc-archive/repo-log-sessions45-46b-presquash.txt",
+      "lines": 91,
+      "sha256": "b13d768d4318c8b52ebe578b2e841238b7ef6cd9c0971abc0cd3e71b8377e7f5",
+      "reviewed": []
+    },
+    {
+      "path": "vmctx/fakebwrap/bwrap",
+      "lines": 21,
+      "sha256": "0f03ec5bb1466906f0d9fdc8d236347d4feebe39ea9572800a6d8eea1d789a29",
+      "reviewed": [
+        [
+          1,
+          21
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/kernel-patches/0001-vmctx-native-VM-contexts-for-the-netboot-destination.patch",
+      "lines": 7565,
+      "sha256": "3f45614955bfed226ad79452f89d43d3e44a2aa3a380ebdbe5fabd28894dd01c",
+      "reviewed": [
+        [
+          1,
+          7565
+        ]
+      ],
+      "review_method": "Verified 7351 postimage/context lines byte-for-byte against previously reviewed files at a572abfde1aa7454553b09d4cf0d2bd377cf55d9, with each source SHA-256 checked against the ledger. Read all 214 remaining lines (metadata, deletions and unread config excerpt). Evidence: logs/audit-20260906/patch-coverage.json."
+    },
+    {
+      "path": "vmctx/kernel-patches/README.md",
+      "lines": 75,
+      "sha256": "d0641cf41be7623e517c51acfcbf3a05763cd41be58a86552df87301f3aca7dd",
+      "reviewed": [
+        [
+          1,
+          75
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/kernel-patches/linux-7.0.14/0001-vmctx-native-VM-contexts-run-a-program-whose-memory-.patch",
+      "lines": 10709,
+      "sha256": "3d0b1226c4b77d964ad823ec6eacbadf0a0ff4a05fcabcc69e310d5324d26818",
+      "reviewed": [
+        [
+          1,
+          10709
+        ]
+      ],
+      "review_method": "Verified 10468 postimage/context lines byte-for-byte against previously reviewed files at c7d183e3d68975d9003d66a2e616f18bb2f07b71, with each source SHA-256 checked against the ledger. Read all 241 remaining lines (metadata, deletions and unread config excerpt). Evidence: logs/audit-20260906/patch-coverage.json."
+    },
+    {
+      "path": "vmctx/kernel/Makefile",
+      "lines": 15,
+      "sha256": "9dc5a2dfc8927d07fa42e066c3a104361e193608a539bd565eacd8a402c566b5",
+      "reviewed": [
+        [
+          1,
+          15
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/kernel/vmctx.c",
+      "lines": 4645,
+      "sha256": "d57d9e23f61fd25c2640efee8a0c07ce5a322e62b5cf833c733c593893029626",
+      "reviewed": [
+        [
+          1,
+          4645
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/kernel/vmctx_uapi.h",
+      "lines": 279,
+      "sha256": "80fbeee6c27a731e523d7832d5ed98dfc3f7c15f89a81f433db9ba8050ce084b",
+      "reviewed": [
+        [
+          1,
+          279
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/local-here.sh",
+      "lines": 337,
+      "sha256": "8f157bf6b4f0fce900d17deccc97d1a346f907dc5defb8e37990c7899ae8f7b7",
+      "reviewed": [
+        [
+          1,
+          337
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/local-run.sh",
+      "lines": 97,
+      "sha256": "2303f6d877cce757cd45266bf5af2716289694cc11ebfde09843a946218311f5",
+      "reviewed": [
+        [
+          1,
+          97
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/make-apkovl.sh",
+      "lines": 39,
+      "sha256": "dd6eb0c227a55d3d4f57618af00f6225d4a755681868b6f048ada27ac32445a2",
+      "reviewed": [
+        [
+          1,
+          39
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/native.sh",
+      "lines": 19,
+      "sha256": "02536ece1c1a939dc292d7ca4c49aec7cd445ebab74abd576147b14deae739c8",
+      "reviewed": [
+        [
+          1,
+          19
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/reboot-target.sh",
+      "lines": 50,
+      "sha256": "c086a66144a14226abd975cad46c2c85e9348ac0383a2313dea1276e8028daac",
+      "reviewed": [
+        [
+          1,
+          50
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/remote-run.sh",
+      "lines": 130,
+      "sha256": "e000507ea97b9393dd44fcbafbafc9dfc9073e5badcabec73c9cb3a47eeb3e9d",
+      "reviewed": [
+        [
+          1,
+          130
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/setup-target.sh",
+      "lines": 44,
+      "sha256": "5509f1149018f45d0cf68f1614ae72833745927f24fecb960d20487068bf1ed1",
+      "reviewed": [
+        [
+          1,
+          44
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/sync-amd.sh",
+      "lines": 83,
+      "sha256": "a08fb2cef709b92844a1c51923694594c2d115f080cac364d8e6e0a9947428a4",
+      "reviewed": [
+        [
+          1,
+          83
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/an1.c",
+      "lines": 169,
+      "sha256": "8698468f83e23328cb3e8461f96dcc8d64e93aa78f4ebbf1ba98c7c0f556d4bb",
+      "reviewed": [
+        [
+          1,
+          169
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/census.sh",
+      "lines": 132,
+      "sha256": "090e840ffdf1facbb37dbf9428421d712c29db81917f726bc705f0aa862aec72",
+      "reviewed": [
+        [
+          1,
+          132
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/chain.sh",
+      "lines": 82,
+      "sha256": "526438ed2ad5423041c28e27d772fc690d4b98d02933f06d034ab8ef0052fe3d",
+      "reviewed": [
+        [
+          1,
+          82
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/cow1.c",
+      "lines": 117,
+      "sha256": "5d0f344292641ee0640facc4ec6e48ff92f5d845507f689b167bb3a6df2e9769",
+      "reviewed": [
+        [
+          1,
+          117
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/dl1.c",
+      "lines": 177,
+      "sha256": "045a13a60080551ca512bfb181c9c75d37d04e08555546780068aa2a39cc8cb4",
+      "reviewed": [
+        [
+          1,
+          177
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/dma1.c",
+      "lines": 151,
+      "sha256": "a8aeb37c382025e9be8eb7e0214e28c5f2e070b24eba427d78fffb69e126df9b",
+      "reviewed": [
+        [
+          1,
+          151
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/ex1.c",
+      "lines": 55,
+      "sha256": "21582af30635c2f0f13c71a729a670f5be6a77eef586a2dcdd8c1fc668572e1c",
+      "reviewed": [
+        [
+          1,
+          55
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/ex3.c",
+      "lines": 22,
+      "sha256": "31b17596c2737e40e724d170c2b1052a585925c6856141c3c0232d06e2092486",
+      "reviewed": [
+        [
+          1,
+          22
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/ex4.c",
+      "lines": 88,
+      "sha256": "ddb258457b39330b46b838226f1d5769667004c39233e59e3bf892f7d360c2da",
+      "reviewed": [
+        [
+          1,
+          88
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/ex5.c",
+      "lines": 81,
+      "sha256": "9b9ba309ac4033bbe7145e297798acd381d52b7990acf1e29fad281730b3a5bf",
+      "reviewed": [
+        [
+          1,
+          81
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/ex6.c",
+      "lines": 85,
+      "sha256": "ac491d7380ce523a656627e20eadaa5438b3ca3ba5a44753498b42a93296b010",
+      "reviewed": [
+        [
+          1,
+          85
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/fc1.c",
+      "lines": 193,
+      "sha256": "cebe213ef219b17675dd5b4e3c33c307d82c1e04effc53d30194755f97e2988c",
+      "reviewed": [
+        [
+          1,
+          193
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/fi1.c",
+      "lines": 270,
+      "sha256": "8446638aadb224702e59b443fb079e72b3f5b942255dea42a272b21582c6f136",
+      "reviewed": [
+        [
+          1,
+          270
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/fi2.c",
+      "lines": 410,
+      "sha256": "6ca8ec49ec47137eddebe9f78ad31adbb827fba8ca85c10facdb09394c84172c",
+      "reviewed": [
+        [
+          1,
+          410
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/fm1.c",
+      "lines": 128,
+      "sha256": "38b09c273771a5c579d9fd5a025545ad6cbcf116adaa51a4b28e150f0356a127",
+      "reviewed": [
+        [
+          1,
+          128
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/fs1.c",
+      "lines": 124,
+      "sha256": "77e61c3e734fb87c97f03e566fa058911d83b8a01e3d1d0ddca8b11b1c71791c",
+      "reviewed": [
+        [
+          1,
+          124
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/fx1.c",
+      "lines": 133,
+      "sha256": "925c7e92f9b0c796776d496ee20e5a4f0a6eedb9ce61f94435033b1c0ac62511",
+      "reviewed": [
+        [
+          1,
+          133
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/gate.sh",
+      "lines": 70,
+      "sha256": "856b6fd9890a03d91f3b3107a38846dc2ca52dde5a36f04ab6e294f04d6e3d1e",
+      "reviewed": [
+        [
+          1,
+          70
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/gp1.c",
+      "lines": 139,
+      "sha256": "d95a78cced5600ae783ea0ac726194b22261488254f7a643021f1a6201b6643c",
+      "reviewed": [
+        [
+          1,
+          139
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/hp1.c",
+      "lines": 380,
+      "sha256": "79beeeaec66b592a152a6aace3244059a5ec6e676e272ec681303d6e54ef74d2",
+      "reviewed": [
+        [
+          1,
+          380
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/hp2.c",
+      "lines": 193,
+      "sha256": "2a79394eecef24a8268ffdf754d42919f8a8dfc288499d31595a25f4dd0328f0",
+      "reviewed": [
+        [
+          1,
+          193
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/hx1.c",
+      "lines": 217,
+      "sha256": "1b1c72ea060ad3ea809a340a04cc27d226fca7dd0ce30a2da6df2cf4d9e89499",
+      "reviewed": [
+        [
+          1,
+          217
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/hx2.c",
+      "lines": 212,
+      "sha256": "80a85ac297561c1116f85ed28c146efabe62c6a4b03f0ee1abc9c4140f37ca33",
+      "reviewed": [
+        [
+          1,
+          212
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/io1.c",
+      "lines": 205,
+      "sha256": "653fdecaa71341304da440d6a471bd52d7b1ee2ec717e0cb3f5144cba38e01c8",
+      "reviewed": [
+        [
+          1,
+          205
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/lo1.c",
+      "lines": 127,
+      "sha256": "b16ab1574ffb885a53d2fcbc6d2c258a05128e187f8206e6995cba6832129e69",
+      "reviewed": [
+        [
+          1,
+          127
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/loc2.c",
+      "lines": 60,
+      "sha256": "9dfa6611d0167dc77239a94f63e932e63462a7ab1f02b753e52c528cd0f66b5c",
+      "reviewed": [
+        [
+          1,
+          60
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/md1.c",
+      "lines": 149,
+      "sha256": "02736e55279090fd1a720ddd5c6f22212dce6c977b35d8bd6c61614993c6e5d8",
+      "reviewed": [
+        [
+          1,
+          149
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/mf1.c",
+      "lines": 154,
+      "sha256": "7a78de567771f642c5d8a5ade7188d0ca77ae8887530a1874d9d0e76c0608cb1",
+      "reviewed": [
+        [
+          1,
+          154
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/mf2.c",
+      "lines": 163,
+      "sha256": "5d0aa362207c11ee1b977fa2e18918db7a7238ea32b34a0141a2b874de138ffc",
+      "reviewed": [
+        [
+          1,
+          163
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/mr1.c",
+      "lines": 228,
+      "sha256": "f4302e0854673594967949b19444d52dea6a0875bdc4ad50b82789a22a7bee89",
+      "reviewed": [
+        [
+          1,
+          228
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/mu1.c",
+      "lines": 121,
+      "sha256": "18d4545e801bc3e5a37384ad408a403bc7f29b9867cfbcac813d7ad390bd6d06",
+      "reviewed": [
+        [
+          1,
+          121
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/mu2.c",
+      "lines": 159,
+      "sha256": "cb42faf97a8a28a0d71e360d8ad98462a44d710891ddaca4d57aada4be60adec",
+      "reviewed": [
+        [
+          1,
+          159
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/ns1.c",
+      "lines": 182,
+      "sha256": "e9798165b88bd68fb6d71368485fbab7c26a7735e419f823cbe0d58a16180b14",
+      "reviewed": [
+        [
+          1,
+          182
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/perf.sh",
+      "lines": 160,
+      "sha256": "d8b190e9ac4e1290737cb72cd15b0774adf8d35388f137fdfcd47a9563863740",
+      "reviewed": [
+        [
+          1,
+          160
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/perfab.sh",
+      "lines": 97,
+      "sha256": "f7349a5a17b524fdd3eed20cf30396d60590c9d293ce9d3842b1251d3b832546",
+      "reviewed": [
+        [
+          1,
+          97
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/pf1.c",
+      "lines": 183,
+      "sha256": "33969d3b793db9bbef7126ea4d8188f9915e6085134c10f554122ee35028ac32",
+      "reviewed": [
+        [
+          1,
+          183
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/pf2.c",
+      "lines": 348,
+      "sha256": "a15fd2baa48d02a4c01c0dd413d99a4e44fe99653c4d2a036c542d522c34eaea",
+      "reviewed": [
+        [
+          1,
+          348
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/pf3.c",
+      "lines": 169,
+      "sha256": "7603ed9deb3d077fdcc3340f9647cebe9accd21d815de2e74952e9d8eb69d1c1",
+      "reviewed": [
+        [
+          1,
+          169
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/pf4.c",
+      "lines": 227,
+      "sha256": "a902cc442619b7f8966b68e17465b095b10122fd431e2f02e30f814cac7628bd",
+      "reviewed": [
+        [
+          1,
+          227
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/pf5.c",
+      "lines": 115,
+      "sha256": "e684907e2162a73ecb11b6e78e8ff2ea23dbc58c4e93402ed10d3f42289cca3c",
+      "reviewed": [
+        [
+          1,
+          115
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/pg1.c",
+      "lines": 152,
+      "sha256": "06dc94399e7253c21dc91a57611cb4534227ca60b8811ffcf0758259c138b83b",
+      "reviewed": [
+        [
+          1,
+          152
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/pg2.c",
+      "lines": 197,
+      "sha256": "1cfbe3479677ca739ac49221161477dde52f86a2d049288b408ef094f4f0e5d0",
+      "reviewed": [
+        [
+          1,
+          197
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/pg3.c",
+      "lines": 151,
+      "sha256": "793377f5fcd30c9478f9a372d83d8660b6795cf086c0ff3e972db847e586272b",
+      "reviewed": [
+        [
+          1,
+          151
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/pid1.c",
+      "lines": 157,
+      "sha256": "8f02e3f02de77cd0adb418aa7b1ac49ac4d8741eae18abd242d51d48656f9472",
+      "reviewed": [
+        [
+          1,
+          157
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/pk1.c",
+      "lines": 200,
+      "sha256": "1d7f00b4bd7d3b77bf400a32e478e544b12a1d889de60f8805cf641f5e104420",
+      "reviewed": [
+        [
+          1,
+          200
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/progs.sh",
+      "lines": 459,
+      "sha256": "ece758214cca447dda977770614846e0dcf7acce922d05b4f2863bca4031bd1e",
+      "reviewed": [
+        [
+          1,
+          459
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/prun.sh",
+      "lines": 116,
+      "sha256": "dc5c9c59a0e68f5d1524f328d02352c3124571c484026123a1d8c38fafe782f1",
+      "reviewed": [
+        [
+          1,
+          116
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/rd1.c",
+      "lines": 151,
+      "sha256": "cd9db8bae4f3a8823dbf11ed3cb3376ee64833ab62c72014934690f567dfdca3",
+      "reviewed": [
+        [
+          1,
+          151
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/rf1.c",
+      "lines": 146,
+      "sha256": "c2e4ebe2fc4d34d04da7374d7ee2d035d6afc0582ffd2117892f2ed1b0acc24f",
+      "reviewed": [
+        [
+          1,
+          146
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/rf2.c",
+      "lines": 138,
+      "sha256": "119f819f3c8d4f643c4a742190adb4c795df70830c71cf9a5893d6e73a61f64c",
+      "reviewed": [
+        [
+          1,
+          138
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/runany-x.sh",
+      "lines": 99,
+      "sha256": "b32ed281a60fbcf6b7e2e8e5284b4c781c256bde6b72d9fd3d5d8ac5f3b3ff3e",
+      "reviewed": [
+        [
+          1,
+          99
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/runany.sh",
+      "lines": 79,
+      "sha256": "1dab2e09d6692bebe3b96fe98e70118548dd992591e9c2d87cc346fc0040ebd2",
+      "reviewed": [
+        [
+          1,
+          79
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/sh2.c",
+      "lines": 152,
+      "sha256": "9f7e9753005cd6d0912b6152a84ddbee430fb264c076e3941df3a30af514fb86",
+      "reviewed": [
+        [
+          1,
+          152
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/sig1.c",
+      "lines": 331,
+      "sha256": "a9c679af080065bc214c07b8264aebeda441ac779529baeda73c71bada967bbd",
+      "reviewed": [
+        [
+          1,
+          331
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/sm1.c",
+      "lines": 235,
+      "sha256": "5d43081c2d74bf97863d7b046f57e9f54e4592dd95cdb498431ad3fe074a9174",
+      "reviewed": [
+        [
+          1,
+          235
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/sm2.c",
+      "lines": 357,
+      "sha256": "35b8121b2f99b61b0f9e7212ddb2f324194fab18447f2f59d2fcfba6399c4209",
+      "reviewed": [
+        [
+          1,
+          357
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/sm3.c",
+      "lines": 121,
+      "sha256": "06c8f13eb0d0fd14dd5ce0eef9c7d68f30aa9508e6a141bb27995bd623f8023e",
+      "reviewed": [
+        [
+          1,
+          121
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/stk1.c",
+      "lines": 78,
+      "sha256": "d648f3129e073d0a83122d366c5cb416cd8e06406f477b17037ebffa34151b45",
+      "reviewed": [
+        [
+          1,
+          78
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/suite.sh",
+      "lines": 694,
+      "sha256": "d1568300f0d997259b61f30bb31bea285bc4fab0771f61887f1c3642f5630b92",
+      "reviewed": [
+        [
+          1,
+          694
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/th12.c",
+      "lines": 49,
+      "sha256": "b05334121365a8eb8749307d899c95aa82a71c0c2142ea6471aca400e7085266",
+      "reviewed": [
+        [
+          1,
+          49
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/th9.c",
+      "lines": 45,
+      "sha256": "9704aa3d3689b3a205353309b35fc60dd1137bb7509429058b292b98c48bd5d9",
+      "reviewed": [
+        [
+          1,
+          45
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/torture.sh",
+      "lines": 142,
+      "sha256": "802fca38de34d1c2fb551fd78c76e8a71eee41da743d9b499ee5f76fa3caa36f",
+      "reviewed": [
+        [
+          1,
+          142
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/tr1.c",
+      "lines": 195,
+      "sha256": "b6507fe7dd4b9b543488a0d60319d5cf52417cb0244a70f7ee83755d289cfb12",
+      "reviewed": [
+        [
+          1,
+          195
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/vd1.c",
+      "lines": 139,
+      "sha256": "b27b65a421b018d08849444d7d0b0891bd9da98eac5ace82b85abedfef2b116d",
+      "reviewed": [
+        [
+          1,
+          139
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/ws1-armab.sh",
+      "lines": 72,
+      "sha256": "6e0bf2cee18615e4eb5e02d6d3e18ed090c15ab6b83796f2a093f481d1cce820",
+      "reviewed": [
+        [
+          1,
+          72
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/ws1-oracle.sh",
+      "lines": 85,
+      "sha256": "3b86c90b6635ade952a52653a5e43f8170f46e12f4d87196188fd576e40c607a",
+      "reviewed": [
+        [
+          1,
+          85
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/ws1-repeat.sh",
+      "lines": 93,
+      "sha256": "6140f5d426dd8b0ec35dbb21a805d805c56e63a8d005c867bd3e1e446d2d7f9c",
+      "reviewed": [
+        [
+          1,
+          93
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/tests/ws1.c",
+      "lines": 143,
+      "sha256": "5faed56c3f3bd9c5f4d5649186fceb628465911f8bde81aeec5a5bfe980f4bbe",
+      "reviewed": [
+        [
+          1,
+          143
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/user/Makefile",
+      "lines": 62,
+      "sha256": "fad5b600b4f20d257b7b6a4f916381f25fc48b07e55a302e09be093f8abd5bf3",
+      "reviewed": [
+        [
+          1,
+          62
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/user/common.h",
+      "lines": 56,
+      "sha256": "707354ea10905fb3283d88bd29febef6654b055fbe14f21691eae47bd0a1fcad",
+      "reviewed": [
+        [
+          1,
+          56
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/user/deadline.h",
+      "lines": 57,
+      "sha256": "59ed6e473a84b6d8f1b2e04b0d20ca32e3f28d5f49af3911afd00a8397bbf573",
+      "reviewed": [
+        [
+          1,
+          57
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/user/dumpvm.c",
+      "lines": 103,
+      "sha256": "a16f5a117e9f2d2161d82b75fbaa0bd7d42d5bd6da9a2741ff5f98c52523a0bf",
+      "reviewed": [
+        [
+          1,
+          103
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/user/homeapp.c",
+      "lines": 113,
+      "sha256": "bf82d50cde073ddf7680c94bcfc93d141532d36ddfb2c1181e7c71a0aba41ca7",
+      "reviewed": [
+        [
+          1,
+          113
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/user/own.h",
+      "lines": 517,
+      "sha256": "795eacd510714545c9bfe4d9aeedeeeb8238d291c3446bcfbda4c9874c96742f",
+      "reviewed": [
+        [
+          1,
+          517
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/user/pgstate.h",
+      "lines": 247,
+      "sha256": "5e8585a7b62fde6a7865f68069bf0e6cdea48c5576ea42a14ac43fb6b958051b",
+      "reviewed": [
+        [
+          1,
+          247
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/user/vmbench.c",
+      "lines": 78,
+      "sha256": "eada3f7ef64b350fdeb13307dd1add05a14b2f348a4eebf7aa719a19e97f201d",
+      "reviewed": [
+        [
+          1,
+          78
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/user/vmhome.c",
+      "lines": 8309,
+      "sha256": "99b579436d2768c52888edabdf7ab7e56cc66f4087dde72b26c381af58964c97",
+      "reviewed": [
+        [
+          1,
+          8309
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/user/vmmig.c",
+      "lines": 352,
+      "sha256": "f2b7e8787f5c0e6c541fd78b60f112742166250ee2d780b06322110b8ff7e90c",
+      "reviewed": [
+        [
+          1,
+          352
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/user/vmmon.c",
+      "lines": 327,
+      "sha256": "208cc1c73dc1325794db34159863771e102a45922a47ee084759c53bc98d716d",
+      "reviewed": [
+        [
+          1,
+          327
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/user/vmremote.c",
+      "lines": 18414,
+      "sha256": "a68f6a5d81d6d021b98f0b4cfeb6c5382a1698c5b7b205b11fd4261d995f4565",
+      "reviewed": [
+        [
+          1,
+          18414
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/user/vmrproto.h",
+      "lines": 675,
+      "sha256": "27eef7ca99dc972f7121078b5c93d581d11765e1770b203b8074011436636321",
+      "reviewed": [
+        [
+          1,
+          675
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/user/vmselftest.c",
+      "lines": 65,
+      "sha256": "d99b22c85a5b41099ff78c67128adc60ad2b432fd245b91a49e8086ef3fb48f1",
+      "reviewed": [
+        [
+          1,
+          65
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/user/vmsys.c",
+      "lines": 216,
+      "sha256": "4c58c0b1cb345bc57256263541f5ec4c7f8095d6d4723ec2fb303e57cddd68c7",
+      "reviewed": [
+        [
+          1,
+          216
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/user/vmtake.c",
+      "lines": 271,
+      "sha256": "5d79d5e9ac8761167f524e5aa1491daf7ec7378b0ad206e6008f5649eeb013b2",
+      "reviewed": [
+        [
+          1,
+          271
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/user/vmthreads.c",
+      "lines": 75,
+      "sha256": "cba99e3871820d5f7a21092cba67f7eab3620d248eca69e869ee79e029d6ef09",
+      "reviewed": [
+        [
+          1,
+          75
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/verify-build.sh",
+      "lines": 119,
+      "sha256": "294cfeb2904f968a5c91b99f0a8fc6d50d4ca14a3b1534d4a5ec390bef229c63",
+      "reviewed": [
+        [
+          1,
+          119
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/wedge.sh",
+      "lines": 41,
+      "sha256": "99157eecc5d127f120631c11219e5f64fa9a7af8e49fed3a5d8e99a91f0b599f",
+      "reviewed": [
+        [
+          1,
+          41
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/wedge5.sh",
+      "lines": 39,
+      "sha256": "b109f60236a7bf24ac30d3ddfb12011f2304d9f1988b2438f61ee65f48781a63",
+      "reviewed": [
+        [
+          1,
+          39
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/xbrowser.sh",
+      "lines": 157,
+      "sha256": "0e12aed0dd6c938f3667a447e76f3a689edfcc03f42c0344845a92a55d3e8fb4",
+      "reviewed": [
+        [
+          1,
+          157
+        ]
+      ]
+    },
+    {
+      "path": "vmctx/xrun.sh",
+      "lines": 78,
+      "sha256": "466d5f429d951d999024415edc593f50b444f870190d910f72125ff33d3f2faa",
+      "reviewed": [
+        [
+          1,
+          78
+        ]
+      ]
+    },
+    {
+      "path": "src/linux-7.0.14/arch/x86/entry/syscalls/syscall_64.tbl",
+      "lines": 448,
+      "sha256": "9c5aa51de08c5b6c7108d50d3182975e63810eb749520edfcc9c86faecc658af",
+      "reviewed": [
+        [
+          1,
+          448
+        ]
+      ],
+      "kernel_baseline": "add83c849",
+      "review_method": "Full read."
+    },
+    {
+      "path": "src/linux-7.0.14/arch/x86/kernel/Makefile",
+      "lines": 183,
+      "sha256": "7d8e33751f2b7f308425c9a5517ce26ce9cf8408b7d89860a081074de5f27bb6",
+      "reviewed": [
+        [
+          1,
+          183
+        ]
+      ],
+      "kernel_baseline": "add83c849",
+      "review_method": "Full read."
+    },
+    {
+      "path": "src/linux-7.0.14/arch/x86/kernel/fpu/core.c",
+      "lines": 1027,
+      "sha256": "b51f0ee219f142088b4f200d9b5b2438fad54307764321c402ad74370ae64166",
+      "reviewed": [
+        [
+          1,
+          1027
+        ]
+      ],
+      "kernel_baseline": "add83c849"
+    },
+    {
+      "path": "src/linux-7.0.14/arch/x86/kernel/vmctx.c",
+      "lines": 72,
+      "sha256": "b1a76ed39389748180ec77be8bc7a67090a046c6e035f2dde6e021604fd6910a",
+      "reviewed": [
+        [
+          1,
+          72
+        ]
+      ],
+      "kernel_baseline": "add83c849"
+    },
+    {
+      "path": "src/linux-7.0.14/fs/exec.c",
+      "lines": 2029,
+      "sha256": "bd2f8a191758665cd6e6f84e7b9c0242252d5f926e28e3e817a09543023e1511",
+      "reviewed": [
+        [
+          1,
+          2029
+        ]
+      ],
+      "kernel_baseline": "add83c849"
+    },
+    {
+      "path": "src/linux-7.0.14/fs/proc/array.c",
+      "lines": 818,
+      "sha256": "9f948af0701579afe34bf4f28a09906009a36b5d40a4d9cd4739bb6a3e7e6333",
+      "reviewed": [
+        [
+          1,
+          818
+        ]
+      ],
+      "kernel_baseline": "add83c849",
+      "review_method": "Full read"
+    },
+    {
+      "path": "src/linux-7.0.14/include/linux/irq-entry-common.h",
+      "lines": 451,
+      "sha256": "1bdd6cdb6172eb6f12de08c3376155bda861c6844f2581d580f71bdfa9cf66fb",
+      "reviewed": [
+        [
+          1,
+          451
+        ]
+      ],
+      "kernel_baseline": "add83c849"
+    },
+    {
+      "path": "src/linux-7.0.14/include/linux/mm.h",
+      "lines": 4901,
+      "sha256": "ef4a33586edccb10c4aa46924ed67e50af128588e68babe18d5257d7da016ab2",
+      "reviewed": [
+        [
+          1,
+          4901
+        ]
+      ],
+      "kernel_baseline": "add83c849",
+      "review_method": "Full read"
+    },
+    {
+      "path": "src/linux-7.0.14/include/linux/sched.h",
+      "lines": 2499,
+      "sha256": "8a57a7a1b785127933b2ad46af3c2ae098a975995e82f169a29910bee57f8d79",
+      "reviewed": [
+        [
+          1,
+          2499
+        ]
+      ],
+      "kernel_baseline": "add83c849",
+      "review_method": "Full read"
+    },
+    {
+      "path": "src/linux-7.0.14/include/linux/syscalls.h",
+      "lines": 1339,
+      "sha256": "6045de15645dff5ccd6503bc7e8a8ffaedf17c76e6a5d9273f2495c2931ce7a4",
+      "reviewed": [
+        [
+          1,
+          1339
+        ]
+      ],
+      "kernel_baseline": "add83c849",
+      "review_method": "Full read"
+    },
+    {
+      "path": "src/linux-7.0.14/include/linux/vmctx.h",
+      "lines": 604,
+      "sha256": "bcc12c388494a2188476bd586d67956063fc8d2925ebffce118f5aa85f2273eb",
+      "reviewed": [
+        [
+          1,
+          604
+        ]
+      ],
+      "kernel_baseline": "add83c849"
+    },
+    {
+      "path": "src/linux-7.0.14/include/uapi/linux/vmctx.h",
+      "lines": 705,
+      "sha256": "3d74b97c7b7536d257470c1d5a874359a3eed53f72dcd8289c1b2e1d702b0538",
+      "reviewed": [
+        [
+          1,
+          705
+        ]
+      ],
+      "kernel_baseline": "add83c849"
+    },
+    {
+      "path": "src/linux-7.0.14/kernel/Makefile",
+      "lines": 210,
+      "sha256": "c1643fe4269e8385bd1f0f5fcc8c5daa1f04d6b427a0594fe0f0b522ef7de177",
+      "reviewed": [
+        [
+          1,
+          210
+        ]
+      ],
+      "kernel_baseline": "add83c849",
+      "review_method": "Full read."
+    },
+    {
+      "path": "src/linux-7.0.14/kernel/entry/common.c",
+      "lines": 311,
+      "sha256": "b0dba416d59523a59f12535bc651f245f5e0f80abae8792f3e051c14525d0d1f",
+      "reviewed": [
+        [
+          1,
+          311
+        ]
+      ],
+      "kernel_baseline": "add83c849"
+    },
+    {
+      "path": "src/linux-7.0.14/kernel/exit.c",
+      "lines": 2010,
+      "sha256": "ccd2085dc8fc246fd55c1e701f6607d20b7aa4ba0f5851e272adb8c016e23e70",
+      "reviewed": [
+        [
+          1,
+          2010
+        ]
+      ],
+      "kernel_baseline": "add83c849"
+    },
+    {
+      "path": "src/linux-7.0.14/kernel/fork.c",
+      "lines": 3330,
+      "sha256": "8d7c41332026db8bb1c8c47221a807eea99f31cb3bc026d52d578e874cea3fcc",
+      "reviewed": [
+        [
+          1,
+          3330
+        ]
+      ],
+      "kernel_baseline": "add83c849"
+    },
+    {
+      "path": "src/linux-7.0.14/kernel/futex/waitwake.c",
+      "lines": 804,
+      "sha256": "48ebcaea73eb891cecc7cbaa050637d96ba7531b877e8ac65e1b323684e2f48e",
+      "reviewed": [
+        [
+          1,
+          804
+        ]
+      ],
+      "kernel_baseline": "add83c849"
+    },
+    {
+      "path": "src/linux-7.0.14/kernel/vmctx.c",
+      "lines": 8234,
+      "sha256": "fa9567f1b5d424c2a86aa3004a905b9030255b3c00f987ab4758c47351e6d796",
+      "reviewed": [
+        [
+          1,
+          8234
+        ]
+      ],
+      "kernel_baseline": "add83c849"
+    },
+    {
+      "path": "src/linux-7.0.14/mm/madvise.c",
+      "lines": 2264,
+      "sha256": "9531e9c1340a9b6b1a6c1ceee2fabb2f50dcd60fe2ed3099972dea075c4ce6db",
+      "reviewed": [
+        [
+          1,
+          2264
+        ]
+      ],
+      "kernel_baseline": "add83c849"
+    },
+    {
+      "path": "src/linux-7.0.14/mm/memory.c",
+      "lines": 7797,
+      "sha256": "25c0c39c78efd37a3a66f981e5a9eef70e2df1d408bcb4464d0d2006d192724a",
+      "reviewed": [
+        [
+          1,
+          7797
+        ]
+      ],
+      "kernel_baseline": "add83c849"
+    },
+    {
+      "path": "src/linux-7.0.14/mm/mmap.c",
+      "lines": 1935,
+      "sha256": "10f8295a25a32838df25f35519d8dfa6a3cef7e49ca7d8bf2ad67c275cecf4b1",
+      "reviewed": [
+        [
+          1,
+          1935
+        ]
+      ],
+      "kernel_baseline": "add83c849"
+    },
+    {
+      "path": "src/linux-7.0.14/mm/mprotect.c",
+      "lines": 1026,
+      "sha256": "e8c7f414ae6d213ef871751a4144911fdbc5fc11995d6771f3c5c7315ead5c13",
+      "reviewed": [
+        [
+          1,
+          1026
+        ]
+      ],
+      "kernel_baseline": "add83c849"
+    },
+    {
+      "path": "src/linux-7.0.14/mm/shmem.c",
+      "lines": 6032,
+      "sha256": "5a59130c62e219fa1df4da906a8f04e49d1c74b2968af0336d81697b6ca4ec6f",
+      "reviewed": [
+        [
+          1,
+          6032
+        ]
+      ],
+      "kernel_baseline": "add83c849",
+      "review_method": "Full read"
+    },
+    {
+      "path": "src/linux-7.0.14/mm/vma.c",
+      "lines": 3332,
+      "sha256": "d4ef0123681cc6ea95a476a61a939aaea1a84724722da924c134352a482c696f",
+      "reviewed": [
+        [
+          1,
+          3332
+        ]
+      ],
+      "kernel_baseline": "add83c849",
+      "review_method": "Full read."
+    },
+    {
+      "path": "src/linux-7.0.14/vmctx/kernel-patches/linux-7.0.14/0041-vmctx-say-which-of-these-two-kernels-has-the-guest-A.patch",
+      "lines": 63,
+      "sha256": "79ae33677131f9e657bd10b9295cd7de0db1c6c12a7ae1193e1b84eae0facfda",
+      "reviewed": [
+        [
+          1,
+          63
+        ]
+      ],
+      "kernel_baseline": "add83c849",
+      "review_method": "Full read of historical feature macro patch; current header separately reviewed."
+    },
+    {
+      "path": "src/linux-6.18.35/.config",
+      "lines": 11252,
+      "sha256": "3907a79814a739f5b494cccc9e049fa32d80b2668a352cad3abfded7b5103daa",
+      "reviewed": [
+        [
+          1,
+          11252
+        ]
+      ],
+      "kernel_baseline": "ed9484e8f",
+      "review_method": "Lines 1\u2013900 read verbatim; 901\u201311252 read with source line numbers and normalization of CONFIG_NAME=value / disabled CONFIG_NAME to NAME=value / NAME=n; every setting and substantive comment retained, blank lines and bare comment separators omitted."
+    },
+    {
+      "path": "src/linux-6.18.35/arch/x86/entry/syscalls/syscall_64.tbl",
+      "lines": 443,
+      "sha256": "1bd841c08d0749e4bfb8130b45b59e126169ab646c574d5b56f8ddd1bfe53b60",
+      "reviewed": [
+        [
+          1,
+          443
+        ]
+      ],
+      "kernel_baseline": "ed9484e8f",
+      "review_method": "Complete AMD counterpart read plus full interversion diff."
+    },
+    {
+      "path": "src/linux-6.18.35/arch/x86/kernel/Makefile",
+      "lines": 183,
+      "sha256": "48cb962b98a0ed9fa4988a9ff5b40253fd5a6c8dc4e14555a794fc878bdf5ead",
+      "reviewed": [
+        [
+          1,
+          183
+        ]
+      ],
+      "kernel_baseline": "ed9484e8f",
+      "review_method": "Complete AMD counterpart read plus full interversion diff."
+    },
+    {
+      "path": "src/linux-6.18.35/arch/x86/kernel/fpu/core.c",
+      "lines": 1032,
+      "sha256": "e148de71da4d855e359b755fb5259004207c17cc4a8c9d1488e3bdbdd355cda6",
+      "reviewed": [
+        [
+          1,
+          1032
+        ]
+      ],
+      "kernel_baseline": "ed9484e8f",
+      "review_method": "Full AMD counterpart read, then complete inter-version diff reviewed (identical dispatch file checked with cmp)."
+    },
+    {
+      "path": "src/linux-6.18.35/arch/x86/kernel/vmctx.c",
+      "lines": 72,
+      "sha256": "b1a76ed39389748180ec77be8bc7a67090a046c6e035f2dde6e021604fd6910a",
+      "reviewed": [
+        [
+          1,
+          72
+        ]
+      ],
+      "kernel_baseline": "ed9484e8f",
+      "review_method": "Full AMD counterpart read, then complete inter-version diff reviewed (identical dispatch file checked with cmp)."
+    },
+    {
+      "path": "src/linux-6.18.35/fs/exec.c",
+      "lines": 2089,
+      "sha256": "1c11d558bc94f0c8003a15ed1e94856f9ef94440b62f4784eabb48101c260c94",
+      "reviewed": [
+        [
+          1,
+          2089
+        ]
+      ],
+      "kernel_baseline": "ed9484e8f",
+      "review_method": "Complete AMD counterpart read plus complete interversion diff."
+    },
+    {
+      "path": "src/linux-6.18.35/fs/proc/array.c",
+      "lines": 822,
+      "sha256": "ab4062a72905b9358f10830a117e863a1e2788c406ef407172d7235f0fae7000",
+      "reviewed": [
+        [
+          1,
+          822
+        ]
+      ],
+      "kernel_baseline": "ed9484e8f",
+      "review_method": "Full AMD counterpart read and all 73 lines of inter-version diff reviewed."
+    },
+    {
+      "path": "src/linux-6.18.35/include/linux/irq-entry-common.h",
+      "lines": 408,
+      "sha256": "c10003383028e2fcc22efa453a13d3b23b722831a59dca54f3e290e683102e8c",
+      "reviewed": [
+        [
+          1,
+          408
+        ]
+      ],
+      "kernel_baseline": "ed9484e8f",
+      "review_method": "Full AMD counterpart read, then complete inter-version diff reviewed (identical dispatch file checked with cmp)."
+    },
+    {
+      "path": "src/linux-6.18.35/include/linux/mm.h",
+      "lines": 4406,
+      "sha256": "9293cdc00724e1fdafc899a6b555b9fb72546d8b44c91201cb6d467d2bde038e",
+      "reviewed": [
+        [
+          1,
+          4406
+        ]
+      ],
+      "kernel_baseline": "ed9484e8f",
+      "review_method": "Full AMD counterpart read and all 1304 lines of inter-version diff reviewed."
+    },
+    {
+      "path": "src/linux-6.18.35/include/linux/sched.h",
+      "lines": 2449,
+      "sha256": "9278eab24897af7ded82ecb80872ff9c49ce7be26fd7b15af8d8e2aa109ffa2a",
+      "reviewed": [
+        [
+          1,
+          2449
+        ]
+      ],
+      "kernel_baseline": "ed9484e8f",
+      "review_method": "Full AMD counterpart read and all 336 lines of inter-version diff reviewed."
+    },
+    {
+      "path": "src/linux-6.18.35/include/linux/syscalls.h",
+      "lines": 1339,
+      "sha256": "c2865eb253c1a0ba21b00f735da7f2992d9ce1deb7c178d470b205cd1fa5c2b0",
+      "reviewed": [
+        [
+          1,
+          1339
+        ]
+      ],
+      "kernel_baseline": "ed9484e8f",
+      "review_method": "Full AMD counterpart read and all 60 lines of inter-version diff reviewed."
+    },
+    {
+      "path": "src/linux-6.18.35/include/linux/vmctx.h",
+      "lines": 523,
+      "sha256": "856973a632ce30c985992218f6428f9957313308569786fdec5ab89e82ed3d75",
+      "reviewed": [
+        [
+          1,
+          523
+        ]
+      ],
+      "kernel_baseline": "ed9484e8f"
+    },
+    {
+      "path": "src/linux-6.18.35/include/uapi/linux/vmctx.h",
+      "lines": 443,
+      "sha256": "4630a5bf34d85ed950746376432baaca66a90c97ec3974e25c8f01597c3e0aaa",
+      "reviewed": [
+        [
+          1,
+          443
+        ]
+      ],
+      "kernel_baseline": "ed9484e8f"
+    },
+    {
+      "path": "src/linux-6.18.35/kernel/Makefile",
+      "lines": 210,
+      "sha256": "8b63ea2ad3a924d68bb86c5211c939fe07e4617f5ea752427cef39e95b0efee1",
+      "reviewed": [
+        [
+          1,
+          210
+        ]
+      ],
+      "kernel_baseline": "ed9484e8f",
+      "review_method": "Complete AMD counterpart read plus full interversion diff."
+    },
+    {
+      "path": "src/linux-6.18.35/kernel/entry/common.c",
+      "lines": 283,
+      "sha256": "d8f21b1d4402e04fb27b0860eb43397bac67ea9571ce0d076429d7e3ba774afb",
+      "reviewed": [
+        [
+          1,
+          283
+        ]
+      ],
+      "kernel_baseline": "ed9484e8f",
+      "review_method": "Full AMD counterpart read, then complete inter-version diff reviewed (identical dispatch file checked with cmp)."
+    },
+    {
+      "path": "src/linux-6.18.35/kernel/exit.c",
+      "lines": 2005,
+      "sha256": "ace562de4ff7e6b15d5014f76e53d8a0a227d0368ce754f46d0a07b61e17211e",
+      "reviewed": [
+        [
+          1,
+          2005
+        ]
+      ],
+      "kernel_baseline": "ed9484e8f",
+      "review_method": "Complete AMD counterpart read plus complete interversion diff."
+    },
+    {
+      "path": "src/linux-6.18.35/kernel/fork.c",
+      "lines": 3281,
+      "sha256": "de97c83efa95c77febc331ebf70e26cd5e422205dedbeed07bd9ea58d72c1000",
+      "reviewed": [
+        [
+          1,
+          3281
+        ]
+      ],
+      "kernel_baseline": "ed9484e8f",
+      "review_method": "Complete AMD counterpart read plus complete interversion diff."
+    },
+    {
+      "path": "src/linux-6.18.35/kernel/vmctx.c",
+      "lines": 5612,
+      "sha256": "6e00024d9a3252539df97daea2fa1aae479f90555c44979f1d3287186bbc6de8",
+      "reviewed": [
+        [
+          1,
+          5612
+        ]
+      ],
+      "kernel_baseline": "ed9484e8f"
+    },
+    {
+      "path": "src/linux-6.18.35/mm/memory.c",
+      "lines": 7626,
+      "sha256": "822928ec316a0c46eb61d3775b06c6ee2d28de9f6f23d684ca90c05593c17457",
+      "reviewed": [
+        [
+          1,
+          7626
+        ]
+      ],
+      "kernel_baseline": "ed9484e8f",
+      "review_method": "Full AMD counterpart read and all 1684 lines of inter-version diff reviewed."
+    },
+    {
+      "path": "src/linux-6.18.35/mm/mmap.c",
+      "lines": 1907,
+      "sha256": "3791745e0c0930708a028264a9e9e7e6bc2288e5518cde3ce1e2298b437cb59a",
+      "reviewed": [
+        [
+          1,
+          1907
+        ]
+      ],
+      "kernel_baseline": "ed9484e8f",
+      "review_method": "Full AMD counterpart read, then complete inter-version diff reviewed."
+    },
+    {
+      "path": "src/linux-6.18.35/mm/mprotect.c",
+      "lines": 1086,
+      "sha256": "2a889ca726e0014331632507d559904820d9c7c69047f8ad1487f452fe5da260",
+      "reviewed": [
+        [
+          1,
+          1086
+        ]
+      ],
+      "kernel_baseline": "ed9484e8f",
+      "review_method": "Full AMD counterpart read, then complete inter-version diff reviewed."
+    },
+    {
+      "path": "src/linux-6.18.35/mm/shmem.c",
+      "lines": 6024,
+      "sha256": "d26a810b07d0a249053a66295bf555869707e18d55e1b5103583f990165cb0aa",
+      "reviewed": [
+        [
+          1,
+          6024
+        ]
+      ],
+      "kernel_baseline": "ed9484e8f",
+      "review_method": "Full AMD counterpart read and all 945 lines of inter-version diff reviewed."
+    },
+    {
+      "path": "src/linux-6.18.35/mm/vma.c",
+      "lines": 3255,
+      "sha256": "ce820877b7b288672e617e2e750f93d812ed7fd1871a57d788b6b99fcfb10ce6",
+      "reviewed": [
+        [
+          1,
+          3255
+        ]
+      ],
+      "kernel_baseline": "ed9484e8f",
+      "review_method": "Full AMD counterpart read, then complete inter-version diff reviewed."
+    }
+  ],
+  "coverage_note": "Ranges refer to the recorded initial source identity. Full review of dependencies is not implied. Newly authored audit instrumentation is reviewed as it is written; production edits require separate validation.",
+  "additional_dependencies": [
+    {
+      "path": "src/linux-7.0.14/arch/x86/kernel/signal.c",
+      "lines": 439,
+      "sha256": "55a684e8cec8ce77090c6104404dfa417f22bea7751077144de2c84dddd964d7",
+      "reviewed": [
+        [
+          1,
+          439
+        ]
+      ],
+      "review_method": "Full read"
+    },
+    {
+      "path": "src/linux-7.0.14/arch/x86/kernel/fpu/signal.c",
+      "lines": 531,
+      "sha256": "8650176207e338e878b52ba119eeb281227ebbe99d6bce517ac2470eee7e0c9a",
+      "reviewed": [
+        [
+          1,
+          531
+        ]
+      ],
+      "review_method": "Full read"
+    },
+    {
+      "path": "src/linux-7.0.14/arch/x86/kernel/fpu/regset.c",
+      "lines": 468,
+      "sha256": "870bf686c92f608c8d463c7a09ced9f85b5eb3e3e18c62a1b66ac01e2d97e553",
+      "reviewed": [
+        [
+          1,
+          468
+        ]
+      ],
+      "review_method": "Full read"
+    },
+    {
+      "path": "src/linux-6.18.35/arch/x86/kernel/signal.c",
+      "lines": 439,
+      "sha256": "55a684e8cec8ce77090c6104404dfa417f22bea7751077144de2c84dddd964d7",
+      "reviewed": [
+        [
+          1,
+          439
+        ]
+      ],
+      "review_method": "Identical to fully read AMD counterpart (complete diff checked)."
+    },
+    {
+      "path": "src/linux-6.18.35/arch/x86/kernel/fpu/signal.c",
+      "lines": 531,
+      "sha256": "8650176207e338e878b52ba119eeb281227ebbe99d6bce517ac2470eee7e0c9a",
+      "reviewed": [
+        [
+          1,
+          531
+        ]
+      ],
+      "review_method": "Identical to fully read AMD counterpart (complete diff checked)."
+    },
+    {
+      "path": "src/linux-6.18.35/arch/x86/kernel/fpu/regset.c",
+      "lines": 468,
+      "sha256": "870bf686c92f608c8d463c7a09ced9f85b5eb3e3e18c62a1b66ac01e2d97e553",
+      "reviewed": [
+        [
+          1,
+          468
+        ]
+      ],
+      "review_method": "Identical to fully read AMD counterpart (complete diff checked)."
+    },
+    {
+      "path": "src/linux-6.18.35/include/linux/shmem_fs.h",
+      "lines": 225,
+      "sha256": "ceb0cfdbd00ca351e8d04060ab25b41c615c8e19d9243ca5866816a27a1bdac2",
+      "reviewed": [
+        [
+          1,
+          225
+        ]
+      ],
+      "review_method": "Full read before adding shared declaration."
+    },
+    {
+      "path": "src/linux-7.0.14/include/linux/shmem_fs.h",
+      "lines": 251,
+      "sha256": "2b85a7368d461e83e65b48957b662d56209e98f3ce71dd4236008a6d49f26827",
+      "reviewed": [
+        [
+          1,
+          251
+        ]
+      ],
+      "review_method": "Full interversion diff after complete Intel header read; before adding shared declaration."
+    },
+    {
+      "path": "src/linux-7.0.14/include/linux/futex.h",
+      "lines": 120,
+      "sha256": "b08d9d122beab18db6947e64e84cbb65eaa5909c20e9cb7bdbb373dda72363b6",
+      "reviewed": [
+        [
+          1,
+          120
+        ]
+      ],
+      "review_method": "Full read before adding shared cross-mm wake declaration and disabled-FUTEX stub."
+    }
+  ]
+}

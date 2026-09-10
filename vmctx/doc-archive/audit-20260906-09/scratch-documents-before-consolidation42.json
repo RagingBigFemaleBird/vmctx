@@ -1,0 +1,32 @@
+{
+  "files": {
+    "vmctx/audit/2026-09-06.md": "3b4ec2fc3c0db460ccb2cd10e6ac4d50117ca5e9e01109b1d4e06de98da93bf6",
+    "vmctx/audit/2026-09-07.md": "dd3414ff1df3fa6d5abaa2b4158e1c720f9898acc4bc4994eafebf6c0b9eac7d",
+    "vmctx/audit/HANDOFF-20260908.md": "0e73b4626e78ba0c9604e5693b452cedf3edbac9be1e6d1d48096401e7499b5e",
+    "vmctx/audit/HANDOFF-20260909-locks.md": "db266c7dc82274fe27079a691e1332e62e1532f20ff0fe8cf130fe34cf22bb76",
+    "vmctx/audit/bad-page-state-20260908.md": "3ea0b25c94155229d77c22ca53ad7b702f97dfd2afe2152af755b1b2c42658b3",
+    "vmctx/audit/context-lifetime-design-20260909.md": "1c52dc5041b250a52c4d4d1ac30edf0a00e7dfc8410068a3549626cd0e357c7f",
+    "vmctx/audit/continuation-20260909-green.md": "c46f6a32307c25d6aeb8876569117277513256bd3993d455032f38c236250fa3",
+    "vmctx/audit/debug-waits-20260909.md": "8b34e41158153156575e64548fccf945f28225826319b6ef7dcd96d8e40f184a",
+    "vmctx/audit/executor-mm-design-20260909.md": "fcf6f09ad79175241baff96b713819aa247cb98bb0688d1ae7639b0ac62d2686",
+    "vmctx/audit/groff-corruption-20260908.md": "f0f9263ba480756f62ea1a86e70355c3977d4ec2237b1ae0e988e2f76561d287",
+    "vmctx/audit/infrastructure-review.md": "337304e2b323c8be0a215c7a739fad953baf9cce2d545cea03a10e3cd22fddc8",
+    "vmctx/audit/kernel-review.md": "de4db5a20c94fdc570bc356211cacb778e8f68ab6bbc68adbd4f40acc803aea5",
+    "vmctx/audit/locked-page-transfer-design-20260908.md": "2117917757560ae1b951707272d22cc3382f225b169452327a663960d0bf0347",
+    "vmctx/audit/mm-path-coverage-20260909.md": "e902676321f7c1227d44237ab80f37055b9fb66dbc4de712820872fd68b22579",
+    "vmctx/audit/native-residency-design-20260909.md": "2f4b51a09550709f16c70d6cff585776c0c3fe4232e7773cc51d83411aca8784",
+    "vmctx/audit/page-lifetime-audit-20260909.md": "5aa71d7437f27049f0ea92b32824e6fd2e0e9db2b422467d915cb24122020873",
+    "vmctx/audit/ptrace-repair-design-20260908.md": "08ce646885bcc769efb16416093ee5108516a103a49f375d296a27d251304a23",
+    "vmctx/audit/read-ledger.json": "ca719e2d247a673abce63226732a46e375c15c6c700d673a7cc92c28a9981971",
+    "vmctx/audit/reread-20260907.json": "9cf2339e7247b4a4a4f160b057c5fb4c534a07edc1fb248fab9b86cd1b22b7b4",
+    "vmctx/audit/runtime-accounting-design-20260908.md": "d1b1ef4d99fc8832b7532762155d1a84714555fec38e2f67428c72268ac17d0d",
+    "vmctx/audit/shared-object-identity-design-20260908.md": "75d994ec40ef3006ba5d48e48377d6df84f82c7595fab2ebc80b527c6005ca89",
+    "vmctx/audit/simple-performance-20260908.md": "d922399a671d1732da35ceb78bfeb1dd7aae485c6340cd45cb2a7a9ec6cd6bfb",
+    "vmctx/audit/source-admission-20260909.md": "b079494051f1266d850dbae384cd08b5654c8eccb23c4b6c9122602d6d8b9913",
+    "vmctx/audit/test-review.md": "4bd815fa7ab0da442738ad5a2fa0d616ba077ca5950ad8f5e7e227cac859e716",
+    "vmctx/audit/userspace-review.md": "4de841b7628cf138d96446d182c59b418b0383f35d66c99cd80b90678f018d49",
+    "vmctx/HANDOFF.md": "9ed172e4c5e8cc7401fce43519b0487dff33fc707faceb265c4d3cc18397fe8e",
+    "vmctx/kernel-patches/README.md": "c394e18a21c9477b0e1425d1a4406068f47dc72cc985d323d9c34f4eeeca3684"
+  },
+  "archive_sha256": "92631ee59414e9b6bfc07cfb89e94c88e4fc12811b2e2b2c60f1f9c47208d8b6"
+}

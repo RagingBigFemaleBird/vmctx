@@ -1,0 +1,313 @@
+shared settlement artifacts: ../build/shared-settlement-controls.sLkbta
+vmctx: page-transfer table capacity=8192 tracked=0 bytes=262144 growths=1
+vmctx: installation table capacity=65536 live=0 bytes=1572864 rehashes=1
+[vmremote] pagemap inspection failed for ctx 7 (0x4000): Invalid argument -- presence UNKNOWN
+[vmremote] settled 1 page(s) into context 7 before snapshot (0 transfer yields)
+PASS: shared settlement bytes result=0 ACKs=1; bytes follow the shared slot, private decoys grant nothing
+vmctx: page-transfer table capacity=8192 tracked=0 bytes=262144 growths=1
+[vmremote] pagemap inspection failed for ctx 7 (0x4000): Invalid argument -- presence UNKNOWN
+[vmremote] settled 1 page(s) into context 7 before snapshot (0 transfer yields)
+PASS: shared settlement absent result=0 ACKs=0; bytes follow the shared slot, private decoys grant nothing
+vmctx: page-transfer table capacity=8192 tracked=0 bytes=262144 growths=1
+[vmremote] settle failed: page 0x4000 has no surviving object copy
+PASS: shared settlement hole result=-1 ACKs=0; bytes follow the shared slot, private decoys grant nothing
+vmctx: page-transfer table capacity=8192 tracked=0 bytes=262144 growths=1
+[vmremote] settle failed: page 0x4000 has no complete landing
+[vmremote] unsettled page receipt at scope exit: context=7 MM=7 epoch=1 page=4000 episode=9223372041149743170; no continuation granted
+PASS: shared settlement short stops before ACK and private fallback (status=24832 ACKs=0)
+vmctx: page-transfer table capacity=8192 tracked=0 bytes=262144 growths=1
+[vmremote] settle failed: page 0x4000 has no complete landing
+[vmremote] unsettled page receipt at scope exit: context=7 MM=7 epoch=1 page=4000 episode=9223372041149743170; no continuation granted
+PASS: shared settlement readonly stops before ACK and private fallback (status=24832 ACKs=0)
+vmctx: page-transfer table capacity=8192 tracked=0 bytes=262144 growths=1
+[vmremote] settle failed: page 0x4000 changed backing during the pull
+[vmremote] unsettled page receipt at scope exit: context=7 MM=7 epoch=1 page=4000 episode=9223372041149743170; no continuation granted
+PASS: shared settlement replaced stops before ACK and private fallback (status=24832 ACKs=0)
+[vmremote] pagemap inspection failed for ctx 7 (0x4000): Invalid argument -- presence UNKNOWN
+PASS: page service read-slot resolves shared storage without a mapped context or private fallback
+[vmremote] pagemap inspection failed for ctx 7 (0x4000): Invalid argument -- presence UNKNOWN
+PASS: page service read-hole resolves shared storage without a mapped context or private fallback
+PASS: monitor diagnostics inherit
+PASS: monitor diagnostics saturation
+PASS: monitor diagnostics sink-error
+[vmhome] page 0x4000: rejected reply status -1234
+[vmhome] page 0x4000: rejected reply status 17
+[vmhome] page 0x4000: the reply is not ours (magic 0xbad, status 0) — the stream is out of step
+[vmhome] page 0x4000: rejected reply status -1234
+[vmhome] page 0x4000: rejected reply status 17
+[vmhome] page 0x4000: the reply is not ours (magic 0xbad, status 0) — the stream is out of step
+[vmhome] page 0x4000: the reply is not ours (magic 0x49504d56, status 0) — the stream is out of step
+[vmhome] page 0x4000: the reply is not ours (magic 0x49504d56, status 0) — the stream is out of step
+[vmhome] page 0x4000: the reply is not ours (magic 0x49504d56, status 0) — the stream is out of step
+[vmhome] page 0x4000: the reply is not ours (magic 0x49504d56, status 0) — the stream is out of step
+[vmhome] page 0x4000: the reply is not ours (magic 0x49504d56, status 0) — the stream is out of step
+[vmhome] page 0x4000: the reply is not ours (magic 0x49504d56, status 0) — the stream is out of step
+[vmhome] page 0x4000: the reply is not ours (magic 0x49504d56, status 0) — the stream is out of step
+[vmhome] page 0x4000: INFLIGHT did not settle after 2332 replies (ctx=123 gen=72 why=1)
+PASS: page replies reject errors, malformed frames, truncation and unsettled transfers
+PASS: memory replies match saved MM/context/epoch/ancestry and all operation arguments; malformed/truncated frames preserve caller bytes and receipts
+[vmremote] missing page receipt for acknowledgement at 0x5000
+[vmremote] unresolved source page fetch for context 7 MM 7 epoch 1 at 4000 (result=-4096); stopping before any ownership or permission grant
+PASS: nested fetches and exec preserve caller-owned page receipts; ACKs echo opaque full64 episodes and old MM; missing receipts and uncertain source outcomes stop before permission grants
+[vmhome] context 1 is about to write 0x4000 and 1 address space(s) copied from it have not been given that page: breaking copy-on-write there first
+[vmhome] context 1 is about to write 0x4000 and 1 address space(s) copied from it have not been given that page: breaking copy-on-write there first
+PASS: production source LAND/PEEK retain old MM across exec, reject raced entry, never replay uncertain commits, and preserve unknown protection/ownership
+PASS: WRITEPREP retains an uncommitted child-copy obligation and ended intermediate MMs retain their lineage edges
+PASS: a multi-page request is refused before any source capture or ownership mutation
+[vmhome] closing custody context=1 mm=4294967303 epoch=1 page=4000 ticket=9223372041149743201 captured=1 read=0 settled=0 status=1
+[vmhome] source adapter failed during connection closed with unconfirmed page custody: State not recoverable
+PASS: connection custody retains 80 full-identity receipts, rejects cross-MM/thread ACKs, preserves uncertain settlement and stops new work before abandonment cleanup
+PASS: production CTXPAGE carries exact full64 custody through old-MM routing, read-only copies, zero grants, rejected ACKs and cleanup before session cancellation
+PASS: native custody adapter retains exact MM/tickets across exec and failed capture/read/ACK/FORGET, stages copyout and rejects receipt drift
+PASS: acknowledgement identity=800000010000beef expected episode=800000010000beef; equal page checksum=beef
+vmctx: installation table capacity=65536 live=0 bytes=1572864 rehashes=1
+[vmremote] 0x4000 was on neither machine, but its last transmitted bytes were retained; served THOSE (real bytes, not zeros) and the fault retries rather than ending the run
+PASS: native write committed 1/4096; landing result=0 installed=0
+PASS: native write committed 4095/4096; landing result=0 installed=0
+PASS: native write committed 4096/4096; landing result=1 installed=1
+PASS: executor socket writes survive closed peers and preserve payloads
+PASS: sparse retained ranges expire promptly without crossing address-space or range boundaries
+PASS: CPU framing preserves all active bytes and rejects missing, extra or invalid state
+PASS: concurrent shared growth preserves aliases, neighbor bytes and sparse page identity
+PASS: child page publication rejects duplicate, unordered and malformed ownership metadata
+PASS: native child snapshot enumeration preserves sparse private ownership across batches and excludes shared mappings
+vmctx: page-transfer table capacity=8192 tracked=0 bytes=262144 growths=1
+[vmremote] settle failed: page 0x1000 owner 12 pull status 5
+[vmremote] settle failed: page 0x1000 has no complete landing
+[vmremote] settled 1 page(s) into context 1 before snapshot (0 transfer yields)
+[vmremote] settled 1 page(s) into context 1 before snapshot (0 transfer yields)
+[vmremote] settle failed: page 0x1000 has no surviving object copy
+[vmremote] settled 1 page(s) into context 1 before snapshot (0 transfer yields)
+[vmremote] settle failed: page 0x1000 has no surviving object copy
+[vmremote] settled 1 page(s) into context 1 before snapshot (0 transfer yields)
+[vmremote] settle failed: page 0x1000 owner 12 pull status 5
+[vmremote] settle failed: page 0x1000 has no complete landing
+[vmremote] settled 1 page(s) into context 1 before snapshot (0 transfer yields)
+[vmremote] settled 1 page(s) into context 1 before snapshot (0 transfer yields)
+[vmremote] settle failed: page 0x1000 has no surviving object copy
+[vmremote] settled 1 page(s) into context 1 before snapshot (0 transfer yields)
+[vmremote] settle failed: page 0x1000 has no surviving object copy
+[vmremote] settled 1 page(s) into context 1 before snapshot (0 transfer yields)
+[vmremote] settled 1 page(s) into context 1 before snapshot (1 transfer yields)
+PASS: source CLAIM releases local exclusion for the source GET, then reserves the complete landing/ACK/retirement episode
+PASS: settlement refuses failed pulls, partial landings and absent unproven copies; shared and private loans retire only with complete bytes
+PASS: monitor mapping guard allows the metadata object, rejects another object with the same name, and fails on an invalid descriptor
+vmctx: page-transfer table capacity=8192 tracked=0 bytes=262144 growths=1
+vmctx: page-transfer table capacity=16384 tracked=4096 bytes=524288 growths=2
+vmctx: page-transfer table capacity=32768 tracked=8192 bytes=1048576 growths=3
+vmctx: page-transfer table capacity=65536 tracked=16384 bytes=2097152 growths=4
+PASS: transfer episodes reject stale completions across contention, MM identities and table growth; 40000 competing writes are conserved
+vmctx: page-transfer table capacity=8192 tracked=0 bytes=262144 growths=1
+PASS: exception dispatch releases both claims and legal access restarts from new bytes
+PASS: execution children preserve exact object descriptors across range order, duplicates, high FDs and all standard-descriptor closures
+PASS: immutable 64-bit MMs preserve old transfers, surviving peers and deep ancestry through context rebinding; stale controls and failed publication cannot mutate new storage
+PASS: immutable execution targets publish source/native epochs atomically, retain old storage through callbacks, reject stale controls and contradictory history, and leave failed commits unpublished
+PASS: source MM publications retain full identities and reject missing generations, contradictory ancestry and malformed births
+PASS: saved source MM targets select surviving peers, fence a raced exec, and never replay an uncertain native commit or refresh an old target
+PASS: delayed old-MM INFO returns the accepted newer binding with its native name and full 64-bit identity
+PASS: delayed live INFO cannot undo a published terminal record
+PASS: source INFO failure stays unknown through final release; no cached live observation invents terminal state
+PASS: binding allocation failure and generation exhaustion leave the accepted binding and descriptor ownership intact
+PASS: 1101 immutable source bindings retain full MM identity and exact generations after exec observations and terminal release
+PASS: recall result=1 loan=44 COW=0 watched=0 coherence=0 map=0
+PASS: cow-denied result=2 loan=0 COW=1 watched=1 coherence=0 map=0
+PASS: spent snapshot result=1 given=0; spent requests cannot copy current bytes, missing owed pages still fail
+PASS: owed snapshot result=1 given=1; spent requests cannot copy current bytes, missing owed pages still fail
+[vmremote] the source asked for a copy-on-write break of 0x4000 from address space 7 and this side has no such page: address space 8 is not given one rather than being given something invented
+vmremote: cannot preserve child MM 8 page 4000 before MM 7 writes
+PASS: missing snapshot result=0 given=0; spent requests cannot copy current bytes, missing owed pages still fail
+[vmremote] vacated by the source's mm hook: 0x4000-0x5000 (0 member(s) unmapped) [#1]
+[vmremote] SLOW coh_lock: held 23078us by range_vacated_1 (tid 711856) -- a coherence lock held this long spans a blocking step; that is the locking defect
+PASS: private mapping publication retires old bytes and loans only in its MM and range
+PASS: generation disagreement is reported without substituting retained bytes
+PASS: permission ended result=0; only an observed sibling exit retires its mapping obligation
+[vmremote] permission update for context 8 failed: Resource temporarily unavailable
+PASS: permission live result=-1; only an observed sibling exit retires its mapping obligation
+[vmremote] permission update for context 7 failed: Resource temporarily unavailable
+PASS: permission owner result=-1; only an observed sibling exit retires its mapping obligation
+[vmremote] permission update for context 8 failed: Input/output error
+PASS: permission error result=-1; only an observed sibling exit retires its mapping obligation
+PASS: admission binding binding-drift preserves captured MM, task and operation identity
+PASS: admission binding args-drift preserves captured MM, task and operation identity
+PASS: admission binding construction preserves captured MM, task and operation identity
+PASS: admission binding publication preserves captured MM, task and operation identity
+PASS: admission binding birth preserves captured MM, task and operation identity
+PASS: admission binding completion preserves captured MM, task and operation identity
+PASS: admission binding exec preserves captured MM, task and operation identity
+[vmremote] unresolved claim for MM 7 page 0x4000 after 2001 replies; throttling without granting ownership
+PASS: claim unresolved claim result=1 throttles=1; preexisting folios confer no new ownership
+PASS: mm-identity unresolved claim result=1 throttles=0; preexisting folios confer no new ownership
+PASS: source acknowledgement accepted, executor exit=0 expected=0
+[vmremote] page acknowledgement unconfirmed for MM 7 at 0x4000: result=-1 transport_error=104; stopping before release
+PASS: source acknowledgement eof, executor exit=97 expected=97
+[vmremote] page acknowledgement unconfirmed for MM 7 at 0x4000: result=-116 transport_error=0; stopping before release
+PASS: source acknowledgement rejected, executor exit=97 expected=97
+[vmremote] page acknowledgement unconfirmed for MM 7 at 0x4000: result=-1 transport_error=71; stopping before release
+PASS: source acknowledgement wrong-target, executor exit=97 expected=97
+[vmremote] page acknowledgement unconfirmed for MM 7 at 0x4000: result=-1 transport_error=71; stopping before release
+PASS: source acknowledgement payload, executor exit=97 expected=97
+[vmremote] address space 7 was copied: 1 page(s) of it write-protected, so the copy is given each one before the original changes it
+PASS: readonly fork page protected=1 native_protections=1 strict_copy=1 snapshot_matches=1
+[vmremote] address space 7 was copied: 1 page(s) of it write-protected, so the copy is given each one before the original changes it
+PASS: executable fork page protected=1 native_protections=1 strict_copy=1 snapshot_matches=1
+[vmremote] address space 7 was copied: 0 page(s) of it write-protected, so the copy is given each one before the original changes it
+PASS: shared fork page protected=0 native_protections=0 strict_copy=0 snapshot_matches=0
+[vmremote] cannot discard 0x4000+0x1000 from MM 7: Function not implemented; stopping before stale bytes can be reused
+[vmremote] cannot discard 0x4000+0x1000 from MM 7: Input/output error; stopping before stale bytes can be reused
+[vmremote] cannot discard 0x4000+0x1000 from MM 7: Bad file descriptor; stopping before stale bytes can be reused
+PASS: failed hole punching stops publication; an interrupted successful discard removes every stale byte
+[vmremote] OBJWRITE2 fd=3 0x4000+1 first8=a700000000000000
+[vmremote] OBJWRITE fd=3 0x4001+1 -> 1 first8=a700000000000000
+PASS: both object write diagnostics respect a one-byte buffer adjacent to inaccessible memory
+PASS: copied layout survives mutation, preserves split tails and isolates MMs sharing low identity bits
+vmctx: installation table capacity=65536 live=0 bytes=1572864 rehashes=1
+PASS: a landing retained across exec writes only the old MM; old retirement preserves the new binding's installation and loan
+PASS: journal mode=callback reads=1 acks=1 wrong_target=0 blocked_callbacks=0 applied=1 source_acked=1
+PASS: journal mode=callback-newer reads=1 acks=1 wrong_target=0 blocked_callbacks=0 applied=0 source_acked=1
+PASS: journal mode=concurrent reads=2 acks=1 wrong_target=0 blocked_callbacks=0 applied=1 source_acked=1
+PASS: journal mode=malformed reads=1 acks=0 wrong_target=0 blocked_callbacks=0 applied=0 source_acked=0
+PASS: journal mode=failed-ack reads=1 acks=1 wrong_target=0 blocked_callbacks=0 applied=1 source_acked=0
+PASS: source exception runtime requires native terminal proof and preserves CPU/binding outcome
+PASS: source exception setcpu requires native terminal proof and preserves CPU/binding outcome
+PASS: source exception ended requires native terminal proof and preserves CPU/binding outcome
+PASS: source exception getcpu requires native terminal proof and preserves CPU/binding outcome
+PASS: source exception delayed requires native terminal proof and preserves CPU/binding outcome
+PASS: source exception live requires native terminal proof and preserves CPU/binding outcome
+PASS: source exception malformed requires native terminal proof and preserves CPU/binding outcome
+PASS: source exception handler requires native terminal proof and preserves CPU/binding outcome
+PASS: source exception drift requires native terminal proof and preserves CPU/binding outcome
+[vmremote] fault 0x0: the program has no mapping there, or no right to that access; handing the exception to the side that owns it
+[vmremote] pagemap inspection failed for ctx 7 (0x8000): Bad address -- presence UNKNOWN
+[vmremote] pagemap inspection failed for ctx 8 (0x8000): Bad address -- presence UNKNOWN
+[vmremote] the guest's stack under rip 0x401000 rsp 0x8000 (page present in a context here: 0)
+[vmremote] pagemap inspection failed for ctx 7 (0x8000): Bad address -- presence UNKNOWN
+[vmremote]   (the guest's own stack is unreadable here too)
+[vmremote] PROVENANCE at the fatal exception (rsp page): 0x8000 in ctx 7 (as 7) abs=100817544383: present=0 pfn=0x0; own object fd 7: hole
+PASS: executor exception ended checks saved task/MM, terminal framing and observed task exit before success (SETCPU=0 signals=1/0)
+[vmremote] fault 0x0: the program has no mapping there, or no right to that access; handing the exception to the side that owns it
+[vmremote] pagemap inspection failed for ctx 7 (0x8000): Bad address -- presence UNKNOWN
+[vmremote] pagemap inspection failed for ctx 8 (0x8000): Bad address -- presence UNKNOWN
+[vmremote] the guest's stack under rip 0x401000 rsp 0x8000 (page present in a context here: 0)
+[vmremote] pagemap inspection failed for ctx 7 (0x8000): Bad address -- presence UNKNOWN
+[vmremote]   (the guest's own stack is unreadable here too)
+[vmremote] PROVENANCE at the fatal exception (rsp page): 0x8000 in ctx 7 (as 7) abs=100817546956: present=0 pfn=0x0; own object fd 7: hole
+PASS: executor exception handler checks saved task/MM, terminal framing and observed task exit before success (SETCPU=1 signals=0/0)
+[vmremote] fault 0x0: the program has no mapping there, or no right to that access; handing the exception to the side that owns it
+[vmremote] pagemap inspection failed for ctx 7 (0x8000): Bad address -- presence UNKNOWN
+[vmremote] pagemap inspection failed for ctx 8 (0x8000): Bad address -- presence UNKNOWN
+[vmremote] the guest's stack under rip 0x401000 rsp 0x8000 (page present in a context here: 0)
+[vmremote] pagemap inspection failed for ctx 7 (0x8000): Bad address -- presence UNKNOWN
+[vmremote]   (the guest's own stack is unreadable here too)
+[vmremote] PROVENANCE at the fatal exception (rsp page): 0x8000 in ctx 7 (as 7) abs=100817549542: present=0 pfn=0x0; own object fd 7: hole
+[vmremote] the owner says the access at 0x0 is LEGAL -- not the program's exception
+PASS: executor exception legal checks saved task/MM, terminal framing and observed task exit before success (SETCPU=0 signals=0/0)
+[vmremote] fault 0x0: the program has no mapping there, or no right to that access; handing the exception to the side that owns it
+[vmremote] pagemap inspection failed for ctx 7 (0x8000): Bad address -- presence UNKNOWN
+[vmremote] pagemap inspection failed for ctx 8 (0x8000): Bad address -- presence UNKNOWN
+[vmremote] the guest's stack under rip 0x401000 rsp 0x8000 (page present in a context here: 0)
+[vmremote] pagemap inspection failed for ctx 7 (0x8000): Bad address -- presence UNKNOWN
+[vmremote]   (the guest's own stack is unreadable here too)
+[vmremote] PROVENANCE at the fatal exception (rsp page): 0x8000 in ctx 7 (as 7) abs=100817552554: present=0 pfn=0x0; own object fd 7: hole
+[vmremote] unresolved source exception reply for context 7 MM 7 epoch 1 at 0 (result=-116); stopping before any ownership or permission grant
+PASS: executor exception wrong-mm checks saved task/MM, terminal framing and observed task exit before success (SETCPU=0 signals=1/1)
+[vmremote] fault 0x0: the program has no mapping there, or no right to that access; handing the exception to the side that owns it
+[vmremote] pagemap inspection failed for ctx 7 (0x8000): Bad address -- presence UNKNOWN
+[vmremote] pagemap inspection failed for ctx 8 (0x8000): Bad address -- presence UNKNOWN
+[vmremote] the guest's stack under rip 0x401000 rsp 0x8000 (page present in a context here: 0)
+[vmremote] pagemap inspection failed for ctx 7 (0x8000): Bad address -- presence UNKNOWN
+[vmremote]   (the guest's own stack is unreadable here too)
+[vmremote] PROVENANCE at the fatal exception (rsp page): 0x8000 in ctx 7 (as 7) abs=100817555045: present=0 pfn=0x0; own object fd 7: hole
+[vmremote] unresolved source exception reply for context 7 MM 7 epoch 1 at 0 (result=-116); stopping before any ownership or permission grant
+PASS: executor exception wrong-task checks saved task/MM, terminal framing and observed task exit before success (SETCPU=0 signals=1/1)
+[vmremote] fault 0x0: the program has no mapping there, or no right to that access; handing the exception to the side that owns it
+[vmremote] pagemap inspection failed for ctx 7 (0x8000): Bad address -- presence UNKNOWN
+[vmremote] pagemap inspection failed for ctx 8 (0x8000): Bad address -- presence UNKNOWN
+[vmremote] the guest's stack under rip 0x401000 rsp 0x8000 (page present in a context here: 0)
+[vmremote] pagemap inspection failed for ctx 7 (0x8000): Bad address -- presence UNKNOWN
+[vmremote]   (the guest's own stack is unreadable here too)
+[vmremote] PROVENANCE at the fatal exception (rsp page): 0x8000 in ctx 7 (as 7) abs=100817557646: present=0 pfn=0x0; own object fd 7: hole
+[vmremote] unresolved source malformed exception termination for context 7 MM 7 epoch 1 at 0 (result=-71); stopping before any ownership or permission grant
+PASS: executor exception bad-ended checks saved task/MM, terminal framing and observed task exit before success (SETCPU=0 signals=1/1)
+[vmremote] fault 0x0: the program has no mapping there, or no right to that access; handing the exception to the side that owns it
+[vmremote] pagemap inspection failed for ctx 7 (0x8000): Bad address -- presence UNKNOWN
+[vmremote] pagemap inspection failed for ctx 8 (0x8000): Bad address -- presence UNKNOWN
+[vmremote] the guest's stack under rip 0x401000 rsp 0x8000 (page present in a context here: 0)
+[vmremote] pagemap inspection failed for ctx 7 (0x8000): Bad address -- presence UNKNOWN
+[vmremote]   (the guest's own stack is unreadable here too)
+[vmremote] PROVENANCE at the fatal exception (rsp page): 0x8000 in ctx 7 (as 7) abs=100817559951: present=0 pfn=0x0; own object fd 7: hole
+[vmremote] unresolved source malformed exception termination for context 7 MM 7 epoch 1 at 0 (result=-71); stopping before any ownership or permission grant
+PASS: executor exception bad-status checks saved task/MM, terminal framing and observed task exit before success (SETCPU=0 signals=1/1)
+[vmremote] fault 0x0: the program has no mapping there, or no right to that access; handing the exception to the side that owns it
+[vmremote] pagemap inspection failed for ctx 7 (0x8000): Bad address -- presence UNKNOWN
+[vmremote] pagemap inspection failed for ctx 8 (0x8000): Bad address -- presence UNKNOWN
+[vmremote] the guest's stack under rip 0x401000 rsp 0x8000 (page present in a context here: 0)
+[vmremote] pagemap inspection failed for ctx 7 (0x8000): Bad address -- presence UNKNOWN
+[vmremote]   (the guest's own stack is unreadable here too)
+[vmremote] PROVENANCE at the fatal exception (rsp page): 0x8000 in ctx 7 (as 7) abs=100817562462: present=0 pfn=0x0; own object fd 7: hole
+[vmremote] unresolved source malformed exception termination for context 7 MM 7 epoch 1 at 0 (result=-71); stopping before any ownership or permission grant
+PASS: executor exception payload checks saved task/MM, terminal framing and observed task exit before success (SETCPU=0 signals=1/1)
+[vmremote] fault 0x0: the program has no mapping there, or no right to that access; handing the exception to the side that owns it
+[vmremote] pagemap inspection failed for ctx 7 (0x8000): Bad address -- presence UNKNOWN
+[vmremote] pagemap inspection failed for ctx 8 (0x8000): Bad address -- presence UNKNOWN
+[vmremote] the guest's stack under rip 0x401000 rsp 0x8000 (page present in a context here: 0)
+[vmremote] pagemap inspection failed for ctx 7 (0x8000): Bad address -- presence UNKNOWN
+[vmremote]   (the guest's own stack is unreadable here too)
+[vmremote] PROVENANCE at the fatal exception (rsp page): 0x8000 in ctx 7 (as 7) abs=100817564966: present=0 pfn=0x0; own object fd 7: hole
+[vmremote] unresolved source stopping ended exception task for context 7 MM 7 epoch 1 at 0 (result=-5); stopping before any ownership or permission grant
+PASS: executor exception stop-failed checks saved task/MM, terminal framing and observed task exit before success (SETCPU=0 signals=2/1)
+[vmremote] pagemap inspection failed for ctx 8 (0x4000): Invalid argument -- presence UNKNOWN
+vmctx: installation table capacity=65536 live=0 bytes=1572864 rehashes=1
+PASS: fault origin local-cow result=1 ACKs=0 native_writes=1; source receipt and protected local snapshot stay distinct
+[vmremote] ctx 8 fault 0x4000 err 0x4 -> the source (region 0x4000-0x5000)
+[vmremote] served 0x4000 : 53 53 53 53 53 53 53 53
+vmctx: installation table capacity=65536 live=0 bytes=1572864 rehashes=1
+PASS: fault origin local-cow-region result=1 ACKs=0 native_writes=1; source receipt and protected local snapshot stay distinct
+[vmremote] pagemap inspection failed for ctx 8 (0x4000): Invalid argument -- presence UNKNOWN
+vmctx: installation table capacity=65536 live=0 bytes=1572864 rehashes=1
+PASS: fault origin source result=1 ACKs=1 native_writes=1; source receipt and protected local snapshot stay distinct
+[vmremote] ctx 8 fault 0x4000 err 0x4 -> the source (region 0x4000-0x5000)
+[vmremote] served 0x4000 : 63 63 63 63 63 63 63 63
+vmctx: installation table capacity=65536 live=0 bytes=1572864 rehashes=1
+PASS: fault origin source-region result=1 ACKs=1 native_writes=1; source receipt and protected local snapshot stay distinct
+[vmremote] pagemap inspection failed for ctx 8 (0x4000): Invalid argument -- presence UNKNOWN
+[vmremote] DECLINED-BY one-page-written-into-the-object: 0x4000 (fault 0x4000 err 0x4) abs=100822289970 -- the local kernel now answers this fault, for a page this side has never had (fresh memory: a page of zeros is what the program's own kernel would give it)
+PASS: fault origin source-object result=0 ACKs=1 native_writes=0; source receipt and protected local snapshot stay distinct
+[vmremote] ctx 8 fault 0x4000 err 0x4 -> the source (region 0x4000-0x5000)
+[vmremote] served 0x4000 : 63 63 63 63 63 63 63 63
+[vmremote] process_vm_writev: Bad address; falling back to per-page POKE
+[vmremote] DECLINED-BY chunk-written-into-the-object: 0x4000 (fault 0x4000 err 0x4) abs=100822291892 -- the local kernel now answers this fault, for a page this side has never had (fresh memory: a page of zeros is what the program's own kernel would give it)
+PASS: fault origin source-region-object result=0 ACKs=1 native_writes=0; source receipt and protected local snapshot stay distinct
+[vmremote] pagemap inspection failed for ctx 8 (0x4000): Invalid argument -- presence UNKNOWN
+vmctx: installation table capacity=65536 live=0 bytes=1572864 rehashes=1
+PASS: fault origin source-loan-map result=1 ACKs=1 native_writes=0; source receipt and protected local snapshot stay distinct
+[vmremote] pagemap inspection failed for ctx 8 (0x4000): Invalid argument -- presence UNKNOWN
+vmctx: installation table capacity=65536 live=0 bytes=1572864 rehashes=1
+PASS: fault origin watched-local result=1 ACKs=0 native_writes=0; source receipt and protected local snapshot stay distinct
+[vmremote] pagemap inspection failed for ctx 8 (0x4000): Invalid argument -- presence UNKNOWN
+vmctx: installation table capacity=65536 live=0 bytes=1572864 rehashes=1
+PASS: fault origin watched-region result=1 ACKs=0 native_writes=0; source receipt and protected local snapshot stay distinct
+[vmremote] pagemap inspection failed for ctx 8 (0x4000): Invalid argument -- presence UNKNOWN
+vmctx: installation table capacity=65536 live=0 bytes=1572864 rehashes=1
+PASS: fault origin watched-region-exec result=1 ACKs=0 native_writes=0; source receipt and protected local snapshot stay distinct
+[vmremote] pagemap inspection failed for ctx 8 (0x4000): Invalid argument -- presence UNKNOWN
+vmctx: installation table capacity=65536 live=0 bytes=1572864 rehashes=1
+PASS: fault origin watched-local-write result=1 ACKs=0 native_writes=0; source receipt and protected local snapshot stay distinct
+[vmremote] pagemap inspection failed for ctx 8 (0x4000): Invalid argument -- presence UNKNOWN
+vmctx: installation table capacity=65536 live=0 bytes=1572864 rehashes=1
+PASS: fault origin watched-region-write result=1 ACKs=0 native_writes=0; source receipt and protected local snapshot stay distinct
+[vmremote] pagemap inspection failed for ctx 8 (0x4000): Invalid argument -- presence UNKNOWN
+[vmremote] fault 0x4000: the source sent the page and it could not be installed (g=4096) -- declining, which is a segmentation fault ONLY if this side has no mapping either
+[vmremote] DECLINED-BY page-arrived-and-could-not-be-installed: 0x4000 (fault 0x4000 err 0x4) abs=100822304159 -- the local kernel now answers this fault, for a page this side has never had (fresh memory: a page of zeros is what the program's own kernel would give it)
+[vmremote] unsettled page receipt at scope exit: context=8 MM=8 epoch=1 page=4000 episode=9223372041149743170; no continuation granted
+PASS: source-no-landing exits before continuation when no landing can consume the receipt (exit=97)
+[vmremote] ctx 8 fault 0x4000 err 0x4 -> the source (region 0x4000-0x5000)
+[vmremote] served 0x4000 : 63 63 63 63 63 63 63 63
+[vmremote] process_vm_writev: Bad address; falling back to per-page POKE
+[vmremote] POKE FAILED at 0x4000 (faulting page 0x4000) -> stays zero
+[vmremote] DECLINED-BY poke-of-the-faulting-page-failed: 0x4000 (fault 0x4000 err 0x4) abs=100822306680 -- the local kernel now answers this fault, for a page this side has never had (fresh memory: a page of zeros is what the program's own kernel would give it)
+[vmremote] unsettled page receipt at scope exit: context=8 MM=8 epoch=1 page=4000 episode=9223372041149743170; no continuation granted
+PASS: source-region-no-landing exits before continuation when no landing can consume the receipt (exit=97)
+
+real	1m25.012s
+user	1m12.806s
+sys	0m5.262s

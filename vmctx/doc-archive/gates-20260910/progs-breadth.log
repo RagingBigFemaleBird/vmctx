@@ -1,0 +1,82 @@
+=== progs gate start 2026-09-10T00:37:23 boot=fca91ceb-77d2-4bed-842d-b4f3037301d5
+counters before: 0 0 0 1 1 0 3 
+PASS sort
+PASS sortp1
+PASS grepr
+PASS awksum
+PASS sedsub
+PASS findt
+PASS objdump
+PASS bcpi
+PASS pyjson
+PASS pythreads
+PASS perl
+PASS gcc
+PASS runfresh
+PASS make
+PASS targz
+PASS zstdrt
+PASS xzrt
+PASS bzip2rt
+PASS ziprt
+PASS gitwork
+PASS curltls
+PASS sshkeygen
+XPASS gpgsym (a known gap, on a good day)
+PASS opensslsha
+PASS magick
+PASS psproc
+PASS topproc
+PASS freedf
+PASS pipes
+PASS rsyncl
+PASS basejq
+PASS cpprt
+PASS arlib
+PASS striprun
+PASS cpiort
+PASS tclsum
+PASS factor
+PASS dcpi
+PASS shufdet
+PASS odx
+PASS filemg
+PASS elftools
+PASS edbatch
+PASS groffman
+PASS bashsub
+PASS xargspar
+PASS findexec
+PASS flock2
+PASS fifo1
+PASS nc1
+PASS scriptpty
+PASS bboxsh
+PASS iconv1
+PASS sums
+PASS lddnames
+PASS getentc
+PASS localec
+PASS duq
+PASS envmisc
+PASS killsig
+PASS timeout1
+PASS pyfork
+XFAIL gdbbt -- no breakpoint hit (rc 0) (known gap)
+XPASS stracec (a known gap, on a good day)
+PASS sqlt
+FAIL nodejit -- rc native=0 guest=1
+PASS nodework
+PASS rubyjit
+PASS luasum
+PASS datetime
+PASS sleepdelta
+PASS pytime
+
+=== progs.s49: 68 pass, 1 fail, 0 skip; known gaps: 1 still failing, 2 passing today ===
+  FAILED nodejit: rc native=0 guest=1
+=== progs rc=1 2026-09-10T00:44:32
+counters after:  0 0 0 1 1 0 3 
+boot after: fca91ceb-77d2-4bed-842d-b4f3037301d5
+D-state after: 
+=== progs gate end

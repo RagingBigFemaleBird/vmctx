@@ -1,0 +1,97 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>vmctx browser audit</title>
+<style>
+  body { margin: 0; color: #172a3a; background: #f4f6f8; font: 18px sans-serif; }
+  header { padding: 24px; background: #183b56; color: white; }
+  main { max-width: 800px; margin: auto; padding: 24px; }
+  input, button { padding: 12px; font: inherit; }
+  input { width: 70%; }
+  article { margin: 24px 0; padding: 24px; background: white; border-left: 6px solid #237d71; }
+</style>
+<header><h1>Browser interaction check</h1></header>
+<main>
+  <p>Type into this field, scroll the articles, and navigate to the next page.</p>
+  <input id="entry" aria-label="Interaction text" autofocus>
+  <button id="next">Next page</button>
+  <p id="echo">Waiting for input</p>
+  <section id="articles"></section>
+</main>
+<script>
+  'use strict';
+  const query = new URLSearchParams(location.search);
+  const token = query.get('token');
+  const page = Number(query.get('page') || 0);
+  document.title = 'vmctx-audit-' + token;
+  const entry = document.getElementById('entry');
+  const articles = document.getElementById('articles');
+  for (let i = 0; i < 120; i++) {
+    const article = document.createElement('article');
+    const heading = document.createElement('h2');
+    heading.textContent = 'Article ' + (i + 1) + ', page ' + page;
+    const text = document.createElement('p');
+    text.textContent = 'A repeatable reading workload with text layout, scrolling, ' +
+      'form input and page navigation. Each input is checked by the host after ' +
+      'the browser has processed it. '.repeat(5);
+    article.append(heading, text);
+    articles.append(article);
+  }
+  let sequence = 0;
+  function report(kind, extra = {}) {
+    fetch('/event', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({token, page, sequence: sequence++, kind,
+                            browser_ms: performance.now(), ...extra})
+    }).catch(() => {});
+  }
+  let inputPending = false;
+  entry.addEventListener('input', () => {
+    document.getElementById('echo').textContent = entry.value;
+    if (!inputPending) {
+      inputPending = true;
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        inputPending = false;
+        report('input', {value: entry.value});
+      }));
+    }
+  });
+  document.getElementById('next').onclick = () => {
+    query.set('page', String(page + 1));
+    location.search = query.toString();
+  };
+  let scrollPending = false;
+  addEventListener('scroll', () => {
+    if (!scrollPending) {
+      scrollPending = true;
+      requestAnimationFrame(() => {
+        scrollPending = false;
+        report('scroll', {y: scrollY});
+      });
+    }
+  });
+  addEventListener('load', () => {
+    entry.focus();
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      const rect = entry.getBoundingClientRect();
+      const border = (outerWidth - innerWidth) / 2;
+      report('ready', {
+        input_x: Math.round((border + rect.x + rect.width / 2) * devicePixelRatio),
+        input_y: Math.round((outerHeight - innerHeight - border + rect.y + rect.height / 2) * devicePixelRatio),
+        active: document.activeElement.id
+      });
+    }));
+  });
+  addEventListener('pointerdown', event => {
+    const rect = entry.getBoundingClientRect();
+    report('pointer', {
+      target: event.target.id, trusted: event.isTrusted,
+      input_dx: Math.round((rect.x + rect.width / 2 - event.clientX) * devicePixelRatio),
+      input_dy: Math.round((rect.y + rect.height / 2 - event.clientY) * devicePixelRatio)
+    });
+  }, true);
+  setInterval(() => report('heartbeat', {
+    active: document.activeElement.id, focus: document.hasFocus(),
+    visibility: document.visibilityState
+  }), 1000);
+</script>

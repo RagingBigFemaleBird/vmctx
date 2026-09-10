@@ -1,0 +1,12 @@
+== verifying intel (10.0.0.30, expecting 6.18.35-0-lts-audit-readobj71, syscalls 470/471)
+   this tree's source id: 75915bd28abd
+  ok        kernel 6.18.35-0-lts-audit-readobj71
+  ok        vmctx module loaded
+  ok        /root/audit-readobj71/vmctx.ko vermagic 6.18.35-0-lts-audit-readobj71 matches the running kernel
+  ok        loaded module srcversion 665E2B59F7ADD5DFE313DB5 is /root/audit-readobj71/vmctx.ko
+  ok        loaded module built from this tree's kernel/ (srcversion 665E2B59F7ADD5DFE313DB5)
+  ok        vmremote built from this tree (75915bd28abd)
+  note      vmhome is not deployed on a destination-only box; not checked
+  ok        vmremote compiled for syscalls 470/471
+
+== intel: everything deployed matches this tree

@@ -1,0 +1,14 @@
+# Source tracing — evidence and unresolved requirements
+
+This is an investigation record, not a completed repair. The authored ptrace-step control passes natively in WSL and fails on frozen userspace 4d47dc8c1699 / AMD kernel #198 after its first PTRACE_SINGLESTEP: child wait status 0xf200, counter 0, parent exits 1. Cleanup completes and native counters return to 0/0. Raw logs: logs/audit-20260907/ptrace-step-baseline-1-raw.tar.gz. The broader GDB baseline reaches the same class of failure, and its former oracle incorrectly accepted a scripted echo even when the inferior had already died. The oracle now requires an actual breakpoint hit.
+
+Two separate source-adapter gaps are visible in the code and logs:
+
+- The source's native exception admission omits x86 #DB. The single-step report is rejected with EINVAL. An architectural debug cause must be carried from the executing CPU, including actual DR6/exit qualification where needed; the executor must not infer a source signal number. Native source ptrace handles the resulting stop and register changes. TF is already part of architectural RFLAGS, but the complete debug-register and breakpoint contract still needs review.
+- arch/x86/kernel/vmctx.c calls x64_sys_call directly, skipping syscall entry/exit tracing work. Linux's syscall_enter_from_user_mode_work and syscall_exit_work perform source ptrace, seccomp, audit and user-dispatch work; their full entry/exit wrappers also perform context-tracking transitions and must not be nested inside the source service loop. Only source-native work belongs here.
+
+Adding tracing stops alone is insufficient. A tracer may change a call's identifier and arguments before dispatch. Current PREPARE classifies the incoming call before that opportunity; a tracer can turn a non-clone into clone after the snapshot decision. Mapping replies also derive from the incoming call, and could describe the wrong effect if the tracer changes it. A correct design either introduces a native post-entry admission phase, or conservatively quiesces traced contexts and reports the actual executed source call and arguments. Native committed mapping/child events remain the authority. Do not infer these Linux meanings on the executor.
+
+The source task's stopped register frame, deferred signal frames, and complete returned CPU state must stay in one lifetime and ordering domain. Debugger memory writes through ptrace or /proc/PID/mem must preserve the same source-owned page and snapshot rules as other kernel writes. Native hardware breakpoints also require execution-side architectural state support, rather than accepting source debug-register writes which only affect a CPU that never runs the guest instructions.
+
+The runtime-accounting checkpoint work should provide instruction boundaries for asynchronous source work, but it is not itself a tracing implementation. No ptrace repair has been applied to the currently building #199 kernel.

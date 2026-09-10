@@ -1,0 +1,1945 @@
+{
+  "root": "/home/desktop/lan-boot",
+  "scope": "All project-authored code, scripts, tests, configuration and exported kernel integration patches; excludes generated binaries, keys, historical logs, and unmodified vendor code.",
+  "files": [
+    {
+      "path": "vmctx/user/vmrproto.h",
+      "lines": 675,
+      "sha256": "27eef7ca99dc972f7121078b5c93d581d11765e1770b203b8074011436636321"
+    },
+    {
+      "path": "vmctx/kernel/vmctx_uapi.h",
+      "lines": 279,
+      "sha256": "80fbeee6c27a731e523d7832d5ed98dfc3f7c15f89a81f433db9ba8050ce084b"
+    },
+    {
+      "path": "vmctx/user/common.h",
+      "lines": 56,
+      "sha256": "707354ea10905fb3283d88bd29febef6654b055fbe14f21691eae47bd0a1fcad"
+    },
+    {
+      "path": "vmctx/user/deadline.h",
+      "lines": 57,
+      "sha256": "59ed6e473a84b6d8f1b2e04b0d20ca32e3f28d5f49af3911afd00a8397bbf573"
+    },
+    {
+      "path": "vmctx/user/own.h",
+      "lines": 522,
+      "sha256": "3278b738e02864aed1e0b3513d85b3f173162ca1b4764694932bc291927f11ab"
+    },
+    {
+      "path": "vmctx/user/pgstate.h",
+      "lines": 200,
+      "sha256": "f21158e1c04487643cbdf4e73ae466db1e7bc63b10ea5867edb033c8be3b663e"
+    },
+    {
+      "path": "vmctx/user/vmhome.c",
+      "lines": 8309,
+      "sha256": "99b579436d2768c52888edabdf7ab7e56cc66f4087dde72b26c381af58964c97"
+    },
+    {
+      "path": "vmctx/user/vmremote.c",
+      "lines": 18336,
+      "sha256": "1e3d82a453011db9a323247154da95c3561ff952a4417caf1e279bd3bb93608f"
+    },
+    {
+      "path": "vmctx/kernel/vmctx.c",
+      "lines": 4649,
+      "sha256": "a389d06fc717647238cd2ff3117c78e6f80b058b7b041e05bcc0b4acc42eba85"
+    },
+    {
+      "path": ".gitignore",
+      "lines": 60,
+      "sha256": "1fcfa259603eba02ecbf8ddedb30fe0d43881c965b9f41a05ed7bafa615143ba"
+    },
+    {
+      "path": "config/dnsmasq.conf.template",
+      "lines": 46,
+      "sha256": "dc2e493f63d8906ea24713974730da775a75a7f93dd7e37d0676711ec37f397b"
+    },
+    {
+      "path": "config/embed.ipxe",
+      "lines": 36,
+      "sha256": "d8b7c84c944576f900685672ad8ace7b914b8a205ea898e826fee035972228a9"
+    },
+    {
+      "path": "http/boot.ipxe",
+      "lines": 44,
+      "sha256": "eede8044fe4b523985b92cecacbf55d5f7bb477bab156f849f50ea4fc2e3bf42"
+    },
+    {
+      "path": "page.html",
+      "lines": 6,
+      "sha256": "8cf1a37e0c38adca131af770b82382c66dc4c6d845c56e5d1b391bdc512747dd"
+    },
+    {
+      "path": "start.sh",
+      "lines": 82,
+      "sha256": "e4efecf5e090eab0c54b41f3021aa452588e6b15bb69eee2a030091bd9f51ee6"
+    },
+    {
+      "path": "stop.sh",
+      "lines": 22,
+      "sha256": "f070b8fd87339f5c07fde4e4e5f49546529bce1d1eb26c319c3a691ea1b98e98"
+    },
+    {
+      "path": "tools/build-kernel.sh",
+      "lines": 130,
+      "sha256": "193a47edd14b5809de7afbc211b397321104027d091b60b10272e55f0e2eb790"
+    },
+    {
+      "path": "tools/mirror-apks.py",
+      "lines": 116,
+      "sha256": "752fa4da124fbcfa9e34f4ab8c683ee77c5a92381838b76372bd21a151c0b204"
+    },
+    {
+      "path": "tools/update-alpine.sh",
+      "lines": 14,
+      "sha256": "99a43c185b4ef19613548f694e9d35a29a354d07f04705be1100fdf7a8692d23"
+    },
+    {
+      "path": "vmctx/apkovl/etc/.default_boot_services",
+      "lines": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vmctx/apkovl/etc/apk/world",
+      "lines": 1,
+      "sha256": "4809f22648e57e2382a407cbf6930c23c697f903afba79031a1970404f97ef90"
+    },
+    {
+      "path": "vmctx/apkovl/etc/hostname",
+      "lines": 1,
+      "sha256": "e4bd077e6a17f698491a1367ce4f7d2d865f6d0e662fc741481e3fa5d90c08db"
+    },
+    {
+      "path": "vmctx/apkovl/etc/local.d/10-vmctx.start",
+      "lines": 31,
+      "sha256": "c06ba1507997fd43f500f84fed60231b9bc07b8b198b45a10b12a65dca412cb4"
+    },
+    {
+      "path": "vmctx/apkovl/etc/ssh/sshd_config",
+      "lines": 9,
+      "sha256": "c2c124976ab2e838049d0ce9c5585b2a255a9387f851c0a7c6d6ccadff6b2caf"
+    },
+    {
+      "path": "vmctx/browser-demo.sh",
+      "lines": 91,
+      "sha256": "cb2a0e95eb9393fee61ebe93da545cf0e2b912a21ba09eb01bcd46e3dc5d78e4"
+    },
+    {
+      "path": "vmctx/browser-run.sh",
+      "lines": 167,
+      "sha256": "a926415855c49e2b92f3f8687898dee520ed2c63978a04c5cd96313fc930efb1"
+    },
+    {
+      "path": "vmctx/build.sh",
+      "lines": 60,
+      "sha256": "c0798f2c2a0b548688af9344d6d67eb3da99317d945fa795993663c4ab1d079d"
+    },
+    {
+      "path": "vmctx/demo/lbrowser.sh",
+      "lines": 52,
+      "sha256": "e6fba5b328dce67704fb18f4554dbd7ac5916e820ed671def5259731b6a3b440"
+    },
+    {
+      "path": "vmctx/demo/lbrowser0.sh",
+      "lines": 55,
+      "sha256": "a024ff184afcac178a842c612ae7f11c4465b321c02c4c1bb871c6bcb2b0258b"
+    },
+    {
+      "path": "vmctx/demo/noshm.c",
+      "lines": 7,
+      "sha256": "6846ddb25e501ab56e9628807dd48f6dfe57d8582686b7b1f8facbd46e18a1cb"
+    },
+    {
+      "path": "vmctx/demo/xbrowser.sh",
+      "lines": 45,
+      "sha256": "c9c414106a9e7ec843b891ab64ac8d6fee4571d735a08e504e0d59ef3ba386d0"
+    },
+    {
+      "path": "vmctx/demo/xprep.sh",
+      "lines": 38,
+      "sha256": "a619307e61603e7f19fe94dcf475b41d4a415f4bda1884d4292f74e0550c881f"
+    },
+    {
+      "path": "vmctx/fakebwrap/bwrap",
+      "lines": 21,
+      "sha256": "0f03ec5bb1466906f0d9fdc8d236347d4feebe39ea9572800a6d8eea1d789a29"
+    },
+    {
+      "path": "vmctx/kernel-patches/0001-vmctx-native-VM-contexts-for-the-netboot-destination.patch",
+      "lines": 7565,
+      "sha256": "3f45614955bfed226ad79452f89d43d3e44a2aa3a380ebdbe5fabd28894dd01c"
+    },
+    {
+      "path": "vmctx/kernel-patches/0002-vmctx-release-context-on-failed-fork.patch",
+      "lines": 22,
+      "sha256": "f9d320cf62a3cdaaa30bfa5f9aa5813a14c8e96f2bcac7041430f9651859c18e"
+    },
+    {
+      "path": "vmctx/kernel-patches/0003-vmctx-declare-shmem-accounting-helper.patch",
+      "lines": 30,
+      "sha256": "41db3c5b00a6474260c862cd7a7d565e66e1db4c01afa20d7eaa440dcf56614a"
+    },
+    {
+      "path": "vmctx/kernel-patches/0004-vmctx-handle-service-allocation-failure.patch",
+      "lines": 13,
+      "sha256": "872549decf0e9356d5bb1c5490937aaf3e1ec5a355022d12ba2faaf3bc1f546d"
+    },
+    {
+      "path": "vmctx/kernel-patches/linux-7.0.14/0001-vmctx-native-VM-contexts-run-a-program-whose-memory-.patch",
+      "lines": 10709,
+      "sha256": "3d0b1226c4b77d964ad823ec6eacbadf0a0ff4a05fcabcc69e310d5324d26818"
+    },
+    {
+      "path": "vmctx/kernel-patches/linux-7.0.14/0002-vmctx-release-context-on-failed-fork.patch",
+      "lines": 22,
+      "sha256": "bd545f6b81d554e385c1ebab53c3ad741e67a09b33ce2508a62691064a384c8a"
+    },
+    {
+      "path": "vmctx/kernel-patches/linux-7.0.14/0003-vmctx-declare-shmem-accounting-helper.patch",
+      "lines": 30,
+      "sha256": "c174c0da084e8817f850db6508efc3f0993aa73db0024d340bc5ca2e59da7f6a"
+    },
+    {
+      "path": "vmctx/kernel-patches/linux-7.0.14/0004-vmctx-handle-service-allocation-failure.patch",
+      "lines": 13,
+      "sha256": "616a76fad133f011132286dc80d713164bf1a1655bee5b70a236159334e8c63e"
+    },
+    {
+      "path": "vmctx/kernel/Makefile",
+      "lines": 15,
+      "sha256": "9dc5a2dfc8927d07fa42e066c3a104361e193608a539bd565eacd8a402c566b5"
+    },
+    {
+      "path": "vmctx/local-here.sh",
+      "lines": 337,
+      "sha256": "8f157bf6b4f0fce900d17deccc97d1a346f907dc5defb8e37990c7899ae8f7b7"
+    },
+    {
+      "path": "vmctx/local-run.sh",
+      "lines": 97,
+      "sha256": "2303f6d877cce757cd45266bf5af2716289694cc11ebfde09843a946218311f5"
+    },
+    {
+      "path": "vmctx/make-apkovl.sh",
+      "lines": 39,
+      "sha256": "dd6eb0c227a55d3d4f57618af00f6225d4a755681868b6f048ada27ac32445a2"
+    },
+    {
+      "path": "vmctx/native.sh",
+      "lines": 19,
+      "sha256": "02536ece1c1a939dc292d7ca4c49aec7cd445ebab74abd576147b14deae739c8"
+    },
+    {
+      "path": "vmctx/reboot-target.sh",
+      "lines": 50,
+      "sha256": "c086a66144a14226abd975cad46c2c85e9348ac0383a2313dea1276e8028daac"
+    },
+    {
+      "path": "vmctx/remote-run.sh",
+      "lines": 130,
+      "sha256": "e000507ea97b9393dd44fcbafbafc9dfc9073e5badcabec73c9cb3a47eeb3e9d"
+    },
+    {
+      "path": "vmctx/setup-target.sh",
+      "lines": 44,
+      "sha256": "5509f1149018f45d0cf68f1614ae72833745927f24fecb960d20487068bf1ed1"
+    },
+    {
+      "path": "vmctx/sync-amd.sh",
+      "lines": 83,
+      "sha256": "a08fb2cef709b92844a1c51923694594c2d115f080cac364d8e6e0a9947428a4"
+    },
+    {
+      "path": "vmctx/tests/an1.c",
+      "lines": 169,
+      "sha256": "8698468f83e23328cb3e8461f96dcc8d64e93aa78f4ebbf1ba98c7c0f556d4bb"
+    },
+    {
+      "path": "vmctx/tests/browser-audit.py",
+      "lines": 406,
+      "sha256": "bcf775d4579b87293081df7439c9db25dc03210d2b55514f35e839552d7bdf3b"
+    },
+    {
+      "path": "vmctx/tests/browser-workload.html",
+      "lines": 97,
+      "sha256": "759936d450214072884fdd01c162f44deaa1f5fc4461e8935bbe20c6056f2247"
+    },
+    {
+      "path": "vmctx/tests/build-inputs.py",
+      "lines": 93,
+      "sha256": "db6d9d2e07107a4f297edaa813aea2ec5ceb0b309ffb67fc7d872c04c0fef98c"
+    },
+    {
+      "path": "vmctx/tests/census.sh",
+      "lines": 132,
+      "sha256": "090e840ffdf1facbb37dbf9428421d712c29db81917f726bc705f0aa862aec72"
+    },
+    {
+      "path": "vmctx/tests/chain.sh",
+      "lines": 82,
+      "sha256": "526438ed2ad5423041c28e27d772fc690d4b98d02933f06d034ab8ef0052fe3d"
+    },
+    {
+      "path": "vmctx/tests/control/fault-reply.c",
+      "lines": 155,
+      "sha256": "929786337abc8384543b045c743839eb3a3854cb1c70ece2b81a0e660ee019bc"
+    },
+    {
+      "path": "vmctx/tests/control/fork-failure.c",
+      "lines": 118,
+      "sha256": "9826db5fbe50fb24c3e0f90d21a37b994ab7d4b725b2144243366999b7100130"
+    },
+    {
+      "path": "vmctx/tests/control/fork-state.c",
+      "lines": 63,
+      "sha256": "418ea40232d3ac5e6d3b521225491cd8852247ac8d9967d13b5ff4a3ed9a0e66"
+    },
+    {
+      "path": "vmctx/tests/control/guard-page.c",
+      "lines": 71,
+      "sha256": "c17285b4a869364c2fb4d500168923ca47e98e803747879912f1f0f77a76ebe0"
+    },
+    {
+      "path": "vmctx/tests/control/kernel-buffer-read.c",
+      "lines": 43,
+      "sha256": "67c0e03ce0c9c3ac6849a8a8101fb81ba9d63bed4877c03a9fb8482ea9f3c2a7"
+    },
+    {
+      "path": "vmctx/tests/control/mprotect-gap.c",
+      "lines": 56,
+      "sha256": "21945e7ff0e7990d9a4918958f1214c9e3ce8f9a9c86015e52439380c2929552"
+    },
+    {
+      "path": "vmctx/tests/control/page-tables.c",
+      "lines": 521,
+      "sha256": "baeb1b1e85744f00e410dfc655cacfb07f486ab5b9e317d460f9a98892b83e0f"
+    },
+    {
+      "path": "vmctx/tests/control/service-alloc-init.c",
+      "lines": 147,
+      "sha256": "f2dad89cbd145feffe6bc8af5adc3dc81d5711296c91dfdd20ad5ab31c923543"
+    },
+    {
+      "path": "vmctx/tests/control/service-alloc-qemu.py",
+      "lines": 120,
+      "sha256": "a51696d59402f881e88e058bdbce7445a8522db91315b9d80cb4159ec06ef1c1"
+    },
+    {
+      "path": "vmctx/tests/control/signal-state.c",
+      "lines": 59,
+      "sha256": "a0996674cdf11014b197fd4af4a1dace0b233c1e4a063a40d19e6a0497ca7b4b"
+    },
+    {
+      "path": "vmctx/tests/cow1.c",
+      "lines": 117,
+      "sha256": "5d0f344292641ee0640facc4ec6e48ff92f5d845507f689b167bb3a6df2e9769"
+    },
+    {
+      "path": "vmctx/tests/dl1.c",
+      "lines": 177,
+      "sha256": "045a13a60080551ca512bfb181c9c75d37d04e08555546780068aa2a39cc8cb4"
+    },
+    {
+      "path": "vmctx/tests/dma1.c",
+      "lines": 151,
+      "sha256": "a8aeb37c382025e9be8eb7e0214e28c5f2e070b24eba427d78fffb69e126df9b"
+    },
+    {
+      "path": "vmctx/tests/ex1.c",
+      "lines": 55,
+      "sha256": "21582af30635c2f0f13c71a729a670f5be6a77eef586a2dcdd8c1fc668572e1c"
+    },
+    {
+      "path": "vmctx/tests/ex3.c",
+      "lines": 22,
+      "sha256": "31b17596c2737e40e724d170c2b1052a585925c6856141c3c0232d06e2092486"
+    },
+    {
+      "path": "vmctx/tests/ex4.c",
+      "lines": 88,
+      "sha256": "ddb258457b39330b46b838226f1d5769667004c39233e59e3bf892f7d360c2da"
+    },
+    {
+      "path": "vmctx/tests/ex5.c",
+      "lines": 81,
+      "sha256": "9b9ba309ac4033bbe7145e297798acd381d52b7990acf1e29fad281730b3a5bf"
+    },
+    {
+      "path": "vmctx/tests/ex6.c",
+      "lines": 85,
+      "sha256": "ac491d7380ce523a656627e20eadaa5438b3ca3ba5a44753498b42a93296b010"
+    },
+    {
+      "path": "vmctx/tests/fc1.c",
+      "lines": 193,
+      "sha256": "cebe213ef219b17675dd5b4e3c33c307d82c1e04effc53d30194755f97e2988c"
+    },
+    {
+      "path": "vmctx/tests/fi1.c",
+      "lines": 270,
+      "sha256": "8446638aadb224702e59b443fb079e72b3f5b942255dea42a272b21582c6f136"
+    },
+    {
+      "path": "vmctx/tests/fi2.c",
+      "lines": 410,
+      "sha256": "6ca8ec49ec47137eddebe9f78ad31adbb827fba8ca85c10facdb09394c84172c"
+    },
+    {
+      "path": "vmctx/tests/fm1.c",
+      "lines": 128,
+      "sha256": "38b09c273771a5c579d9fd5a025545ad6cbcf116adaa51a4b28e150f0356a127"
+    },
+    {
+      "path": "vmctx/tests/fs1.c",
+      "lines": 124,
+      "sha256": "77e61c3e734fb87c97f03e566fa058911d83b8a01e3d1d0ddca8b11b1c71791c"
+    },
+    {
+      "path": "vmctx/tests/fx1.c",
+      "lines": 133,
+      "sha256": "925c7e92f9b0c796776d496ee20e5a4f0a6eedb9ce61f94435033b1c0ac62511"
+    },
+    {
+      "path": "vmctx/tests/gate.sh",
+      "lines": 70,
+      "sha256": "856b6fd9890a03d91f3b3107a38846dc2ca52dde5a36f04ab6e294f04d6e3d1e"
+    },
+    {
+      "path": "vmctx/tests/gp1.c",
+      "lines": 139,
+      "sha256": "d95a78cced5600ae783ea0ac726194b22261488254f7a643021f1a6201b6643c"
+    },
+    {
+      "path": "vmctx/tests/hp1.c",
+      "lines": 380,
+      "sha256": "79beeeaec66b592a152a6aace3244059a5ec6e676e272ec681303d6e54ef74d2"
+    },
+    {
+      "path": "vmctx/tests/hp2.c",
+      "lines": 193,
+      "sha256": "2a79394eecef24a8268ffdf754d42919f8a8dfc288499d31595a25f4dd0328f0"
+    },
+    {
+      "path": "vmctx/tests/hx1.c",
+      "lines": 217,
+      "sha256": "1b1c72ea060ad3ea809a340a04cc27d226fca7dd0ce30a2da6df2cf4d9e89499"
+    },
+    {
+      "path": "vmctx/tests/hx2.c",
+      "lines": 212,
+      "sha256": "80a85ac297561c1116f85ed28c146efabe62c6a4b03f0ee1abc9c4140f37ca33"
+    },
+    {
+      "path": "vmctx/tests/io1.c",
+      "lines": 205,
+      "sha256": "653fdecaa71341304da440d6a471bd52d7b1ee2ec717e0cb3f5144cba38e01c8"
+    },
+    {
+      "path": "vmctx/tests/lo1.c",
+      "lines": 155,
+      "sha256": "5b38a9ee282487197f564debb2ed0c85b3e11bec5e383a45964d8ccea7f114ca"
+    },
+    {
+      "path": "vmctx/tests/loc2.c",
+      "lines": 60,
+      "sha256": "9dfa6611d0167dc77239a94f63e932e63462a7ab1f02b753e52c528cd0f66b5c"
+    },
+    {
+      "path": "vmctx/tests/md1.c",
+      "lines": 149,
+      "sha256": "02736e55279090fd1a720ddd5c6f22212dce6c977b35d8bd6c61614993c6e5d8"
+    },
+    {
+      "path": "vmctx/tests/mf1.c",
+      "lines": 154,
+      "sha256": "7a78de567771f642c5d8a5ade7188d0ca77ae8887530a1874d9d0e76c0608cb1"
+    },
+    {
+      "path": "vmctx/tests/mf2.c",
+      "lines": 163,
+      "sha256": "5d0aa362207c11ee1b977fa2e18918db7a7238ea32b34a0141a2b874de138ffc"
+    },
+    {
+      "path": "vmctx/tests/mr1.c",
+      "lines": 228,
+      "sha256": "f4302e0854673594967949b19444d52dea6a0875bdc4ad50b82789a22a7bee89"
+    },
+    {
+      "path": "vmctx/tests/mu1.c",
+      "lines": 121,
+      "sha256": "18d4545e801bc3e5a37384ad408a403bc7f29b9867cfbcac813d7ad390bd6d06"
+    },
+    {
+      "path": "vmctx/tests/mu2.c",
+      "lines": 159,
+      "sha256": "cb42faf97a8a28a0d71e360d8ad98462a44d710891ddaca4d57aada4be60adec"
+    },
+    {
+      "path": "vmctx/tests/ns1.c",
+      "lines": 182,
+      "sha256": "e9798165b88bd68fb6d71368485fbab7c26a7735e419f823cbe0d58a16180b14"
+    },
+    {
+      "path": "vmctx/tests/oracle-failures.py",
+      "lines": 78,
+      "sha256": "8adcc1f5b92ffa56facca8a04ba2c89b50e27580b457138bf55704a014a7e902"
+    },
+    {
+      "path": "vmctx/tests/ownership.c",
+      "lines": 237,
+      "sha256": "a4d4470438de55dd4678ddc91b914d80decec9640fb477e4adf582bddb08e3fd"
+    },
+    {
+      "path": "vmctx/tests/perf.sh",
+      "lines": 160,
+      "sha256": "d8b190e9ac4e1290737cb72cd15b0774adf8d35388f137fdfcd47a9563863740"
+    },
+    {
+      "path": "vmctx/tests/perfab.sh",
+      "lines": 97,
+      "sha256": "f7349a5a17b524fdd3eed20cf30396d60590c9d293ce9d3842b1251d3b832546"
+    },
+    {
+      "path": "vmctx/tests/pf1.c",
+      "lines": 183,
+      "sha256": "33969d3b793db9bbef7126ea4d8188f9915e6085134c10f554122ee35028ac32"
+    },
+    {
+      "path": "vmctx/tests/pf2.c",
+      "lines": 348,
+      "sha256": "a15fd2baa48d02a4c01c0dd413d99a4e44fe99653c4d2a036c542d522c34eaea"
+    },
+    {
+      "path": "vmctx/tests/pf3.c",
+      "lines": 169,
+      "sha256": "7603ed9deb3d077fdcc3340f9647cebe9accd21d815de2e74952e9d8eb69d1c1"
+    },
+    {
+      "path": "vmctx/tests/pf4.c",
+      "lines": 227,
+      "sha256": "a902cc442619b7f8966b68e17465b095b10122fd431e2f02e30f814cac7628bd"
+    },
+    {
+      "path": "vmctx/tests/pf5.c",
+      "lines": 115,
+      "sha256": "e684907e2162a73ecb11b6e78e8ff2ea23dbc58c4e93402ed10d3f42289cca3c"
+    },
+    {
+      "path": "vmctx/tests/pg1.c",
+      "lines": 152,
+      "sha256": "06dc94399e7253c21dc91a57611cb4534227ca60b8811ffcf0758259c138b83b"
+    },
+    {
+      "path": "vmctx/tests/pg2.c",
+      "lines": 197,
+      "sha256": "1cfbe3479677ca739ac49221161477dde52f86a2d049288b408ef094f4f0e5d0"
+    },
+    {
+      "path": "vmctx/tests/pg3.c",
+      "lines": 151,
+      "sha256": "793377f5fcd30c9478f9a372d83d8660b6795cf086c0ff3e972db847e586272b"
+    },
+    {
+      "path": "vmctx/tests/pid1.c",
+      "lines": 157,
+      "sha256": "8f02e3f02de77cd0adb418aa7b1ac49ac4d8741eae18abd242d51d48656f9472"
+    },
+    {
+      "path": "vmctx/tests/pk1.c",
+      "lines": 200,
+      "sha256": "1d7f00b4bd7d3b77bf400a32e478e544b12a1d889de60f8805cf641f5e104420"
+    },
+    {
+      "path": "vmctx/tests/progs.sh",
+      "lines": 459,
+      "sha256": "ece758214cca447dda977770614846e0dcf7acce922d05b4f2863bca4031bd1e"
+    },
+    {
+      "path": "vmctx/tests/prun.sh",
+      "lines": 116,
+      "sha256": "dc5c9c59a0e68f5d1524f328d02352c3124571c484026123a1d8c38fafe782f1"
+    },
+    {
+      "path": "vmctx/tests/rd1.c",
+      "lines": 151,
+      "sha256": "cd9db8bae4f3a8823dbf11ed3cb3376ee64833ab62c72014934690f567dfdca3"
+    },
+    {
+      "path": "vmctx/tests/rf1.c",
+      "lines": 146,
+      "sha256": "c2e4ebe2fc4d34d04da7374d7ee2d035d6afc0582ffd2117892f2ed1b0acc24f"
+    },
+    {
+      "path": "vmctx/tests/rf2.c",
+      "lines": 138,
+      "sha256": "119f819f3c8d4f643c4a742190adb4c795df70830c71cf9a5893d6e73a61f64c"
+    },
+    {
+      "path": "vmctx/tests/runany-x.sh",
+      "lines": 99,
+      "sha256": "b32ed281a60fbcf6b7e2e8e5284b4c781c256bde6b72d9fd3d5d8ac5f3b3ff3e"
+    },
+    {
+      "path": "vmctx/tests/runany.sh",
+      "lines": 79,
+      "sha256": "1dab2e09d6692bebe3b96fe98e70118548dd992591e9c2d87cc346fc0040ebd2"
+    },
+    {
+      "path": "vmctx/tests/sh2.c",
+      "lines": 152,
+      "sha256": "9f7e9753005cd6d0912b6152a84ddbee430fb264c076e3941df3a30af514fb86"
+    },
+    {
+      "path": "vmctx/tests/sig1.c",
+      "lines": 331,
+      "sha256": "a9c679af080065bc214c07b8264aebeda441ac779529baeda73c71bada967bbd"
+    },
+    {
+      "path": "vmctx/tests/sm1.c",
+      "lines": 235,
+      "sha256": "5d43081c2d74bf97863d7b046f57e9f54e4592dd95cdb498431ad3fe074a9174"
+    },
+    {
+      "path": "vmctx/tests/sm2.c",
+      "lines": 357,
+      "sha256": "35b8121b2f99b61b0f9e7212ddb2f324194fab18447f2f59d2fcfba6399c4209"
+    },
+    {
+      "path": "vmctx/tests/sm3.c",
+      "lines": 121,
+      "sha256": "06c8f13eb0d0fd14dd5ce0eef9c7d68f30aa9508e6a141bb27995bd623f8023e"
+    },
+    {
+      "path": "vmctx/tests/stk1.c",
+      "lines": 78,
+      "sha256": "d648f3129e073d0a83122d366c5cb416cd8e06406f477b17037ebffa34151b45"
+    },
+    {
+      "path": "vmctx/tests/suite.sh",
+      "lines": 687,
+      "sha256": "9c5a83ffb63d0a1ce7f7d8d93c236f7084cdf1fb95a250647113e2300e502cfc"
+    },
+    {
+      "path": "vmctx/tests/th12.c",
+      "lines": 49,
+      "sha256": "b05334121365a8eb8749307d899c95aa82a71c0c2142ea6471aca400e7085266"
+    },
+    {
+      "path": "vmctx/tests/th9.c",
+      "lines": 45,
+      "sha256": "9704aa3d3689b3a205353309b35fc60dd1137bb7509429058b292b98c48bd5d9"
+    },
+    {
+      "path": "vmctx/tests/torture.sh",
+      "lines": 142,
+      "sha256": "802fca38de34d1c2fb551fd78c76e8a71eee41da743d9b499ee5f76fa3caa36f"
+    },
+    {
+      "path": "vmctx/tests/tr1.c",
+      "lines": 195,
+      "sha256": "b6507fe7dd4b9b543488a0d60319d5cf52417cb0244a70f7ee83755d289cfb12"
+    },
+    {
+      "path": "vmctx/tests/vd1.c",
+      "lines": 139,
+      "sha256": "b27b65a421b018d08849444d7d0b0891bd9da98eac5ace82b85abedfef2b116d"
+    },
+    {
+      "path": "vmctx/tests/ws1-armab.sh",
+      "lines": 72,
+      "sha256": "6e0bf2cee18615e4eb5e02d6d3e18ed090c15ab6b83796f2a093f481d1cce820"
+    },
+    {
+      "path": "vmctx/tests/ws1-oracle.sh",
+      "lines": 85,
+      "sha256": "3b86c90b6635ade952a52653a5e43f8170f46e12f4d87196188fd576e40c607a"
+    },
+    {
+      "path": "vmctx/tests/ws1-repeat.sh",
+      "lines": 93,
+      "sha256": "6140f5d426dd8b0ec35dbb21a805d805c56e63a8d005c867bd3e1e446d2d7f9c"
+    },
+    {
+      "path": "vmctx/tests/ws1.c",
+      "lines": 143,
+      "sha256": "5faed56c3f3bd9c5f4d5649186fceb628465911f8bde81aeec5a5bfe980f4bbe"
+    },
+    {
+      "path": "vmctx/user/Makefile",
+      "lines": 88,
+      "sha256": "37b8aeec03379919a50727de2257d92d4d6a0406fcdaa2dcd13467c32b86c29d"
+    },
+    {
+      "path": "vmctx/user/dumpvm.c",
+      "lines": 103,
+      "sha256": "a16f5a117e9f2d2161d82b75fbaa0bd7d42d5bd6da9a2741ff5f98c52523a0bf"
+    },
+    {
+      "path": "vmctx/user/homeapp.c",
+      "lines": 113,
+      "sha256": "bf82d50cde073ddf7680c94bcfc93d141532d36ddfb2c1181e7c71a0aba41ca7"
+    },
+    {
+      "path": "vmctx/user/vmbench.c",
+      "lines": 78,
+      "sha256": "eada3f7ef64b350fdeb13307dd1add05a14b2f348a4eebf7aa719a19e97f201d"
+    },
+    {
+      "path": "vmctx/user/vmmig.c",
+      "lines": 352,
+      "sha256": "f2b7e8787f5c0e6c541fd78b60f112742166250ee2d780b06322110b8ff7e90c"
+    },
+    {
+      "path": "vmctx/user/vmmon.c",
+      "lines": 327,
+      "sha256": "208cc1c73dc1325794db34159863771e102a45922a47ee084759c53bc98d716d"
+    },
+    {
+      "path": "vmctx/user/vmselftest.c",
+      "lines": 65,
+      "sha256": "d99b22c85a5b41099ff78c67128adc60ad2b432fd245b91a49e8086ef3fb48f1"
+    },
+    {
+      "path": "vmctx/user/vmsys.c",
+      "lines": 216,
+      "sha256": "4c58c0b1cb345bc57256263541f5ec4c7f8095d6d4723ec2fb303e57cddd68c7"
+    },
+    {
+      "path": "vmctx/user/vmtake.c",
+      "lines": 271,
+      "sha256": "5d79d5e9ac8761167f524e5aa1491daf7ec7378b0ad206e6008f5649eeb013b2"
+    },
+    {
+      "path": "vmctx/user/vmthreads.c",
+      "lines": 75,
+      "sha256": "cba99e3871820d5f7a21092cba67f7eab3620d248eca69e869ee79e029d6ef09"
+    },
+    {
+      "path": "vmctx/verify-build.sh",
+      "lines": 119,
+      "sha256": "294cfeb2904f968a5c91b99f0a8fc6d50d4ca14a3b1534d4a5ec390bef229c63"
+    },
+    {
+      "path": "vmctx/wedge.sh",
+      "lines": 41,
+      "sha256": "99157eecc5d127f120631c11219e5f64fa9a7af8e49fed3a5d8e99a91f0b599f"
+    },
+    {
+      "path": "vmctx/wedge5.sh",
+      "lines": 39,
+      "sha256": "b109f60236a7bf24ac30d3ddfb12011f2304d9f1988b2438f61ee65f48781a63"
+    },
+    {
+      "path": "vmctx/xbrowser.sh",
+      "lines": 157,
+      "sha256": "0e12aed0dd6c938f3667a447e76f3a689edfcc03f42c0344845a92a55d3e8fb4"
+    },
+    {
+      "path": "vmctx/xrun.sh",
+      "lines": 78,
+      "sha256": "466d5f429d951d999024415edc593f50b444f870190d910f72125ff33d3f2faa"
+    }
+  ],
+  "index": 148,
+  "line": 0,
+  "emitted": [
+    [
+      "vmctx/user/vmrproto.h",
+      1,
+      564
+    ],
+    [
+      "vmctx/user/vmrproto.h",
+      565,
+      675
+    ],
+    [
+      "vmctx/kernel/vmctx_uapi.h",
+      1,
+      279
+    ],
+    [
+      "vmctx/user/common.h",
+      1,
+      56
+    ],
+    [
+      "vmctx/user/deadline.h",
+      1,
+      57
+    ],
+    [
+      "vmctx/user/own.h",
+      1,
+      161
+    ],
+    [
+      "vmctx/user/own.h",
+      162,
+      522
+    ],
+    [
+      "vmctx/user/pgstate.h",
+      1,
+      200
+    ],
+    [
+      "vmctx/user/vmhome.c",
+      1,
+      344
+    ],
+    [
+      "vmctx/user/vmhome.c",
+      345,
+      1069
+    ],
+    [
+      "vmctx/user/vmhome.c",
+      1070,
+      1779
+    ],
+    [
+      "vmctx/user/vmhome.c",
+      1780,
+      2540
+    ],
+    [
+      "vmctx/user/vmhome.c",
+      2541,
+      3404
+    ],
+    [
+      "vmctx/user/vmhome.c",
+      3405,
+      4136
+    ],
+    [
+      "vmctx/user/vmhome.c",
+      4137,
+      4926
+    ],
+    [
+      "vmctx/user/vmhome.c",
+      4927,
+      5762
+    ],
+    [
+      "vmctx/user/vmhome.c",
+      5763,
+      6571
+    ],
+    [
+      "vmctx/user/vmhome.c",
+      6572,
+      7408
+    ],
+    [
+      "vmctx/user/vmhome.c",
+      7409,
+      8247
+    ],
+    [
+      "vmctx/user/vmhome.c",
+      8248,
+      8309
+    ],
+    [
+      "vmctx/user/vmremote.c",
+      1,
+      638
+    ],
+    [
+      "vmctx/user/vmremote.c",
+      639,
+      1408
+    ],
+    [
+      "vmctx/user/vmremote.c",
+      1409,
+      2187
+    ],
+    [
+      "vmctx/user/vmremote.c",
+      2188,
+      2904
+    ],
+    [
+      "vmctx/user/vmremote.c",
+      2905,
+      3683
+    ],
+    [
+      "vmctx/user/vmremote.c",
+      3684,
+      4413
+    ],
+    [
+      "vmctx/user/vmremote.c",
+      4414,
+      5164
+    ],
+    [
+      "vmctx/user/vmremote.c",
+      5165,
+      5960
+    ],
+    [
+      "vmctx/user/vmremote.c",
+      5961,
+      6749
+    ],
+    [
+      "vmctx/user/vmremote.c",
+      6750,
+      7517
+    ],
+    [
+      "vmctx/user/vmremote.c",
+      7518,
+      8323
+    ],
+    [
+      "vmctx/user/vmremote.c",
+      8324,
+      9041
+    ],
+    [
+      "vmctx/user/vmremote.c",
+      9042,
+      9741
+    ],
+    [
+      "vmctx/user/vmremote.c",
+      9742,
+      10480
+    ],
+    [
+      "vmctx/user/vmremote.c",
+      10481,
+      11164
+    ],
+    [
+      "vmctx/user/vmremote.c",
+      11165,
+      11923
+    ],
+    [
+      "vmctx/user/vmremote.c",
+      11924,
+      12679
+    ],
+    [
+      "vmctx/user/vmremote.c",
+      12680,
+      13462
+    ],
+    [
+      "vmctx/user/vmremote.c",
+      13463,
+      14194
+    ],
+    [
+      "vmctx/user/vmremote.c",
+      14195,
+      14940
+    ],
+    [
+      "vmctx/user/vmremote.c",
+      14941,
+      15657
+    ],
+    [
+      "vmctx/user/vmremote.c",
+      15658,
+      16374
+    ],
+    [
+      "vmctx/user/vmremote.c",
+      16375,
+      17168
+    ],
+    [
+      "vmctx/user/vmremote.c",
+      17169,
+      17918
+    ],
+    [
+      "vmctx/user/vmremote.c",
+      17919,
+      18336
+    ],
+    [
+      "vmctx/kernel/vmctx.c",
+      1,
+      232
+    ],
+    [
+      "vmctx/kernel/vmctx.c",
+      233,
+      977
+    ],
+    [
+      "vmctx/kernel/vmctx.c",
+      978,
+      1720
+    ],
+    [
+      "vmctx/kernel/vmctx.c",
+      1721,
+      2478
+    ],
+    [
+      "vmctx/kernel/vmctx.c",
+      2479,
+      3339
+    ],
+    [
+      "vmctx/kernel/vmctx.c",
+      3340,
+      4191
+    ],
+    [
+      "vmctx/kernel/vmctx.c",
+      4192,
+      4649
+    ],
+    [
+      ".gitignore",
+      1,
+      60
+    ],
+    [
+      "config/dnsmasq.conf.template",
+      1,
+      46
+    ],
+    [
+      "config/embed.ipxe",
+      1,
+      36
+    ],
+    [
+      "http/boot.ipxe",
+      1,
+      44
+    ],
+    [
+      "page.html",
+      1,
+      6
+    ],
+    [
+      "start.sh",
+      1,
+      82
+    ],
+    [
+      "stop.sh",
+      1,
+      22
+    ],
+    [
+      "tools/build-kernel.sh",
+      1,
+      61
+    ],
+    [
+      "tools/build-kernel.sh",
+      62,
+      130
+    ],
+    [
+      "tools/mirror-apks.py",
+      1,
+      116
+    ],
+    [
+      "tools/update-alpine.sh",
+      1,
+      14
+    ],
+    [
+      "vmctx/apkovl/etc/apk/world",
+      1,
+      1
+    ],
+    [
+      "vmctx/apkovl/etc/hostname",
+      1,
+      1
+    ],
+    [
+      "vmctx/apkovl/etc/local.d/10-vmctx.start",
+      1,
+      31
+    ],
+    [
+      "vmctx/apkovl/etc/ssh/sshd_config",
+      1,
+      9
+    ],
+    [
+      "vmctx/browser-demo.sh",
+      1,
+      91
+    ],
+    [
+      "vmctx/browser-run.sh",
+      1,
+      167
+    ],
+    [
+      "vmctx/build.sh",
+      1,
+      60
+    ],
+    [
+      "vmctx/demo/lbrowser.sh",
+      1,
+      52
+    ],
+    [
+      "vmctx/demo/lbrowser0.sh",
+      1,
+      36
+    ],
+    [
+      "vmctx/demo/lbrowser0.sh",
+      37,
+      55
+    ],
+    [
+      "vmctx/demo/noshm.c",
+      1,
+      7
+    ],
+    [
+      "vmctx/demo/xbrowser.sh",
+      1,
+      45
+    ],
+    [
+      "vmctx/demo/xprep.sh",
+      1,
+      38
+    ],
+    [
+      "vmctx/fakebwrap/bwrap",
+      1,
+      21
+    ],
+    [
+      "vmctx/kernel-patches/0001-vmctx-native-VM-contexts-for-the-netboot-destination.patch",
+      1,
+      512
+    ],
+    [
+      "vmctx/kernel-patches/0001-vmctx-native-VM-contexts-for-the-netboot-destination.patch",
+      513,
+      1083
+    ],
+    [
+      "vmctx/kernel-patches/0001-vmctx-native-VM-contexts-for-the-netboot-destination.patch",
+      1084,
+      1717
+    ],
+    [
+      "vmctx/kernel-patches/0001-vmctx-native-VM-contexts-for-the-netboot-destination.patch",
+      1718,
+      2379
+    ],
+    [
+      "vmctx/kernel-patches/0001-vmctx-native-VM-contexts-for-the-netboot-destination.patch",
+      2380,
+      3121
+    ],
+    [
+      "vmctx/kernel-patches/0001-vmctx-native-VM-contexts-for-the-netboot-destination.patch",
+      3122,
+      3848
+    ],
+    [
+      "vmctx/kernel-patches/0001-vmctx-native-VM-contexts-for-the-netboot-destination.patch",
+      3849,
+      4584
+    ],
+    [
+      "vmctx/kernel-patches/0001-vmctx-native-VM-contexts-for-the-netboot-destination.patch",
+      4585,
+      5234
+    ],
+    [
+      "vmctx/kernel-patches/0001-vmctx-native-VM-contexts-for-the-netboot-destination.patch",
+      5235,
+      5947
+    ],
+    [
+      "vmctx/kernel-patches/0001-vmctx-native-VM-contexts-for-the-netboot-destination.patch",
+      5948,
+      6704
+    ],
+    [
+      "vmctx/kernel-patches/0001-vmctx-native-VM-contexts-for-the-netboot-destination.patch",
+      6705,
+      7467
+    ],
+    [
+      "vmctx/kernel-patches/0001-vmctx-native-VM-contexts-for-the-netboot-destination.patch",
+      7468,
+      7565
+    ],
+    [
+      "vmctx/kernel-patches/0002-vmctx-release-context-on-failed-fork.patch",
+      1,
+      22
+    ],
+    [
+      "vmctx/kernel-patches/0003-vmctx-declare-shmem-accounting-helper.patch",
+      1,
+      30
+    ],
+    [
+      "vmctx/kernel-patches/0004-vmctx-handle-service-allocation-failure.patch",
+      1,
+      13
+    ],
+    [
+      "vmctx/kernel-patches/linux-7.0.14/0001-vmctx-native-VM-contexts-run-a-program-whose-memory-.patch",
+      1,
+      514
+    ],
+    [
+      "vmctx/kernel-patches/linux-7.0.14/0001-vmctx-native-VM-contexts-run-a-program-whose-memory-.patch",
+      515,
+      1100
+    ],
+    [
+      "vmctx/kernel-patches/linux-7.0.14/0001-vmctx-native-VM-contexts-run-a-program-whose-memory-.patch",
+      1101,
+      1693
+    ],
+    [
+      "vmctx/kernel-patches/linux-7.0.14/0001-vmctx-native-VM-contexts-run-a-program-whose-memory-.patch",
+      1694,
+      2354
+    ],
+    [
+      "vmctx/kernel-patches/linux-7.0.14/0001-vmctx-native-VM-contexts-run-a-program-whose-memory-.patch",
+      2355,
+      3014
+    ],
+    [
+      "vmctx/kernel-patches/linux-7.0.14/0001-vmctx-native-VM-contexts-run-a-program-whose-memory-.patch",
+      3015,
+      3615
+    ],
+    [
+      "vmctx/kernel-patches/linux-7.0.14/0001-vmctx-native-VM-contexts-run-a-program-whose-memory-.patch",
+      3616,
+      4397
+    ],
+    [
+      "vmctx/kernel-patches/linux-7.0.14/0001-vmctx-native-VM-contexts-run-a-program-whose-memory-.patch",
+      4398,
+      5099
+    ],
+    [
+      "vmctx/kernel-patches/linux-7.0.14/0001-vmctx-native-VM-contexts-run-a-program-whose-memory-.patch",
+      5100,
+      5845
+    ],
+    [
+      "vmctx/kernel-patches/linux-7.0.14/0001-vmctx-native-VM-contexts-run-a-program-whose-memory-.patch",
+      5846,
+      6468
+    ],
+    [
+      "vmctx/kernel-patches/linux-7.0.14/0001-vmctx-native-VM-contexts-run-a-program-whose-memory-.patch",
+      6469,
+      7127
+    ],
+    [
+      "vmctx/kernel-patches/linux-7.0.14/0001-vmctx-native-VM-contexts-run-a-program-whose-memory-.patch",
+      7128,
+      7868
+    ],
+    [
+      "vmctx/kernel-patches/linux-7.0.14/0001-vmctx-native-VM-contexts-run-a-program-whose-memory-.patch",
+      7869,
+      8650
+    ],
+    [
+      "vmctx/kernel-patches/linux-7.0.14/0001-vmctx-native-VM-contexts-run-a-program-whose-memory-.patch",
+      8651,
+      9427
+    ],
+    [
+      "vmctx/kernel-patches/linux-7.0.14/0001-vmctx-native-VM-contexts-run-a-program-whose-memory-.patch",
+      9428,
+      10289
+    ],
+    [
+      "vmctx/kernel-patches/linux-7.0.14/0001-vmctx-native-VM-contexts-run-a-program-whose-memory-.patch",
+      10290,
+      10709
+    ],
+    [
+      "vmctx/kernel-patches/linux-7.0.14/0002-vmctx-release-context-on-failed-fork.patch",
+      1,
+      22
+    ],
+    [
+      "vmctx/kernel-patches/linux-7.0.14/0003-vmctx-declare-shmem-accounting-helper.patch",
+      1,
+      30
+    ],
+    [
+      "vmctx/kernel-patches/linux-7.0.14/0004-vmctx-handle-service-allocation-failure.patch",
+      1,
+      13
+    ],
+    [
+      "vmctx/kernel/Makefile",
+      1,
+      15
+    ],
+    [
+      "vmctx/local-here.sh",
+      1,
+      121
+    ],
+    [
+      "vmctx/local-here.sh",
+      122,
+      337
+    ],
+    [
+      "vmctx/local-run.sh",
+      1,
+      97
+    ],
+    [
+      "vmctx/make-apkovl.sh",
+      1,
+      39
+    ],
+    [
+      "vmctx/native.sh",
+      1,
+      19
+    ],
+    [
+      "vmctx/reboot-target.sh",
+      1,
+      50
+    ],
+    [
+      "vmctx/remote-run.sh",
+      1,
+      130
+    ],
+    [
+      "vmctx/setup-target.sh",
+      1,
+      41
+    ],
+    [
+      "vmctx/setup-target.sh",
+      42,
+      44
+    ],
+    [
+      "vmctx/sync-amd.sh",
+      1,
+      83
+    ],
+    [
+      "vmctx/tests/an1.c",
+      1,
+      169
+    ],
+    [
+      "vmctx/tests/browser-audit.py",
+      1,
+      398
+    ],
+    [
+      "vmctx/tests/browser-audit.py",
+      399,
+      406
+    ],
+    [
+      "vmctx/tests/browser-workload.html",
+      1,
+      97
+    ],
+    [
+      "vmctx/tests/build-inputs.py",
+      1,
+      93
+    ],
+    [
+      "vmctx/tests/census.sh",
+      1,
+      132
+    ],
+    [
+      "vmctx/tests/chain.sh",
+      1,
+      82
+    ],
+    [
+      "vmctx/tests/control/fault-reply.c",
+      1,
+      155
+    ],
+    [
+      "vmctx/tests/control/fork-failure.c",
+      1,
+      118
+    ],
+    [
+      "vmctx/tests/control/fork-state.c",
+      1,
+      15
+    ],
+    [
+      "vmctx/tests/control/fork-state.c",
+      16,
+      63
+    ],
+    [
+      "vmctx/tests/control/guard-page.c",
+      1,
+      71
+    ],
+    [
+      "vmctx/tests/control/kernel-buffer-read.c",
+      1,
+      43
+    ],
+    [
+      "vmctx/tests/control/mprotect-gap.c",
+      1,
+      56
+    ],
+    [
+      "vmctx/tests/control/page-tables.c",
+      1,
+      521
+    ],
+    [
+      "vmctx/tests/control/service-alloc-init.c",
+      1,
+      48
+    ],
+    [
+      "vmctx/tests/control/service-alloc-init.c",
+      49,
+      147
+    ],
+    [
+      "vmctx/tests/control/service-alloc-qemu.py",
+      1,
+      120
+    ],
+    [
+      "vmctx/tests/control/signal-state.c",
+      1,
+      59
+    ],
+    [
+      "vmctx/tests/cow1.c",
+      1,
+      117
+    ],
+    [
+      "vmctx/tests/dl1.c",
+      1,
+      177
+    ],
+    [
+      "vmctx/tests/dma1.c",
+      1,
+      151
+    ],
+    [
+      "vmctx/tests/ex1.c",
+      1,
+      55
+    ],
+    [
+      "vmctx/tests/ex3.c",
+      1,
+      22
+    ],
+    [
+      "vmctx/tests/ex4.c",
+      1,
+      15
+    ],
+    [
+      "vmctx/tests/ex4.c",
+      16,
+      88
+    ],
+    [
+      "vmctx/tests/ex5.c",
+      1,
+      81
+    ],
+    [
+      "vmctx/tests/ex6.c",
+      1,
+      85
+    ],
+    [
+      "vmctx/tests/fc1.c",
+      1,
+      193
+    ],
+    [
+      "vmctx/tests/fi1.c",
+      1,
+      270
+    ],
+    [
+      "vmctx/tests/fi2.c",
+      1,
+      321
+    ],
+    [
+      "vmctx/tests/fi2.c",
+      322,
+      410
+    ],
+    [
+      "vmctx/tests/fm1.c",
+      1,
+      128
+    ],
+    [
+      "vmctx/tests/fs1.c",
+      1,
+      124
+    ],
+    [
+      "vmctx/tests/fx1.c",
+      1,
+      133
+    ],
+    [
+      "vmctx/tests/gate.sh",
+      1,
+      70
+    ],
+    [
+      "vmctx/tests/gp1.c",
+      1,
+      139
+    ],
+    [
+      "vmctx/tests/hp1.c",
+      1,
+      170
+    ],
+    [
+      "vmctx/tests/hp1.c",
+      171,
+      380
+    ],
+    [
+      "vmctx/tests/hp2.c",
+      1,
+      193
+    ],
+    [
+      "vmctx/tests/hx1.c",
+      1,
+      217
+    ],
+    [
+      "vmctx/tests/hx2.c",
+      1,
+      212
+    ],
+    [
+      "vmctx/tests/io1.c",
+      1,
+      34
+    ],
+    [
+      "vmctx/tests/io1.c",
+      35,
+      205
+    ],
+    [
+      "vmctx/tests/lo1.c",
+      1,
+      155
+    ],
+    [
+      "vmctx/tests/loc2.c",
+      1,
+      60
+    ],
+    [
+      "vmctx/tests/md1.c",
+      1,
+      149
+    ],
+    [
+      "vmctx/tests/mf1.c",
+      1,
+      154
+    ],
+    [
+      "vmctx/tests/mf2.c",
+      1,
+      163
+    ],
+    [
+      "vmctx/tests/mr1.c",
+      1,
+      136
+    ],
+    [
+      "vmctx/tests/mr1.c",
+      137,
+      228
+    ],
+    [
+      "vmctx/tests/mu1.c",
+      1,
+      121
+    ],
+    [
+      "vmctx/tests/mu2.c",
+      1,
+      159
+    ],
+    [
+      "vmctx/tests/ns1.c",
+      1,
+      182
+    ],
+    [
+      "vmctx/tests/oracle-failures.py",
+      1,
+      78
+    ],
+    [
+      "vmctx/tests/ownership.c",
+      1,
+      226
+    ],
+    [
+      "vmctx/tests/ownership.c",
+      227,
+      237
+    ],
+    [
+      "vmctx/tests/perf.sh",
+      1,
+      160
+    ],
+    [
+      "vmctx/tests/perfab.sh",
+      1,
+      97
+    ],
+    [
+      "vmctx/tests/pf1.c",
+      1,
+      183
+    ],
+    [
+      "vmctx/tests/pf2.c",
+      1,
+      315
+    ],
+    [
+      "vmctx/tests/pf2.c",
+      316,
+      348
+    ],
+    [
+      "vmctx/tests/pf3.c",
+      1,
+      169
+    ],
+    [
+      "vmctx/tests/pf4.c",
+      1,
+      227
+    ],
+    [
+      "vmctx/tests/pf5.c",
+      1,
+      115
+    ],
+    [
+      "vmctx/tests/pg1.c",
+      1,
+      152
+    ],
+    [
+      "vmctx/tests/pg2.c",
+      1,
+      197
+    ],
+    [
+      "vmctx/tests/pg3.c",
+      1,
+      15
+    ],
+    [
+      "vmctx/tests/pg3.c",
+      16,
+      151
+    ],
+    [
+      "vmctx/tests/pid1.c",
+      1,
+      157
+    ],
+    [
+      "vmctx/tests/pk1.c",
+      1,
+      200
+    ],
+    [
+      "vmctx/tests/progs.sh",
+      1,
+      235
+    ],
+    [
+      "vmctx/tests/progs.sh",
+      236,
+      459
+    ],
+    [
+      "vmctx/tests/prun.sh",
+      1,
+      116
+    ],
+    [
+      "vmctx/tests/rd1.c",
+      1,
+      151
+    ],
+    [
+      "vmctx/tests/rf1.c",
+      1,
+      146
+    ],
+    [
+      "vmctx/tests/rf2.c",
+      1,
+      26
+    ],
+    [
+      "vmctx/tests/rf2.c",
+      27,
+      138
+    ],
+    [
+      "vmctx/tests/runany-x.sh",
+      1,
+      99
+    ],
+    [
+      "vmctx/tests/runany.sh",
+      1,
+      79
+    ],
+    [
+      "vmctx/tests/sh2.c",
+      1,
+      152
+    ],
+    [
+      "vmctx/tests/sig1.c",
+      1,
+      331
+    ],
+    [
+      "vmctx/tests/sm1.c",
+      1,
+      120
+    ],
+    [
+      "vmctx/tests/sm1.c",
+      121,
+      235
+    ],
+    [
+      "vmctx/tests/sm2.c",
+      1,
+      357
+    ],
+    [
+      "vmctx/tests/sm3.c",
+      1,
+      121
+    ],
+    [
+      "vmctx/tests/stk1.c",
+      1,
+      78
+    ],
+    [
+      "vmctx/tests/suite.sh",
+      1,
+      270
+    ],
+    [
+      "vmctx/tests/suite.sh",
+      271,
+      687
+    ],
+    [
+      "vmctx/tests/th12.c",
+      1,
+      49
+    ],
+    [
+      "vmctx/tests/th9.c",
+      1,
+      45
+    ],
+    [
+      "vmctx/tests/torture.sh",
+      1,
+      57
+    ],
+    [
+      "vmctx/tests/torture.sh",
+      58,
+      142
+    ],
+    [
+      "vmctx/tests/tr1.c",
+      1,
+      195
+    ],
+    [
+      "vmctx/tests/vd1.c",
+      1,
+      139
+    ],
+    [
+      "vmctx/tests/ws1-armab.sh",
+      1,
+      72
+    ],
+    [
+      "vmctx/tests/ws1-oracle.sh",
+      1,
+      85
+    ],
+    [
+      "vmctx/tests/ws1-repeat.sh",
+      1,
+      93
+    ],
+    [
+      "vmctx/tests/ws1.c",
+      1,
+      37
+    ],
+    [
+      "vmctx/tests/ws1.c",
+      38,
+      143
+    ],
+    [
+      "vmctx/user/Makefile",
+      1,
+      88
+    ],
+    [
+      "vmctx/user/dumpvm.c",
+      1,
+      103
+    ],
+    [
+      "vmctx/user/homeapp.c",
+      1,
+      113
+    ],
+    [
+      "vmctx/user/vmbench.c",
+      1,
+      78
+    ],
+    [
+      "vmctx/user/vmmig.c",
+      1,
+      352
+    ],
+    [
+      "vmctx/user/vmmon.c",
+      1,
+      83
+    ],
+    [
+      "vmctx/user/vmmon.c",
+      84,
+      327
+    ],
+    [
+      "vmctx/user/vmselftest.c",
+      1,
+      65
+    ],
+    [
+      "vmctx/user/vmsys.c",
+      1,
+      216
+    ],
+    [
+      "vmctx/user/vmtake.c",
+      1,
+      271
+    ],
+    [
+      "vmctx/user/vmthreads.c",
+      1,
+      75
+    ],
+    [
+      "vmctx/verify-build.sh",
+      1,
+      65
+    ],
+    [
+      "vmctx/verify-build.sh",
+      66,
+      119
+    ],
+    [
+      "vmctx/wedge.sh",
+      1,
+      41
+    ],
+    [
+      "vmctx/wedge5.sh",
+      1,
+      39
+    ],
+    [
+      "vmctx/xbrowser.sh",
+      1,
+      157
+    ],
+    [
+      "vmctx/xrun.sh",
+      1,
+      78
+    ]
+  ]
+}

@@ -1,0 +1,15 @@
+=== cross gate start 2026-09-10T00:29:26 src boot=fca91ceb-77d2-4bed-842d-b4f3037301d5 7.0.14-vmctx-audit-recall1-terminal222
+Connection timed out during banner exchange
+dst: 
+src counters before: 0 0 0 1 1 0 3 
+dst counters before: 0 0 0 1 1 
+round 1 (1 at a time)
+suite: 78 passed, 0 failed; 0 known gaps still failing, 0 now passing
+=== suite rc=0 2026-09-10T00:36:54
+src counters after:  0 0 0 1 1 0 3 
+dst counters after:  0 0 0 1 1 
+src boot after: fca91ceb-77d2-4bed-842d-b4f3037301d5
+dst boot after: e8e036f7-5adc-4000-b0c2-abd4ba2c2306
+D-state after: 
+dst dmesg: 
+=== cross gate end

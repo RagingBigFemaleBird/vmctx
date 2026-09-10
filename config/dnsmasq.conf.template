@@ -1,0 +1,46 @@
+# dnsmasq proxy-DHCP + TFTP config for LAN boot.
+# This file is a template: start.sh substitutes @IFACE@, @SUBNET@ and @SERVER_IP@
+# and writes the result to config/dnsmasq.conf.
+#
+# Proxy-DHCP mode: your existing router keeps handing out IP addresses;
+# dnsmasq only adds the PXE boot information on top. Nothing on the LAN
+# needs to be reconfigured.
+
+port=0                       # disable DNS entirely
+interface=@IFACE@
+bind-interfaces
+
+# Proxy mode: answer PXE clients on this subnet without allocating addresses
+dhcp-range=@SUBNET@,proxy
+
+# Built-in TFTP server (serves the iPXE bootloaders)
+enable-tftp
+tftp-root=@ROOT@/tftp
+
+# Don't drop privileges to 'nobody' — it cannot traverse into /home/desktop
+# (home dir is mode 750), which makes the TFTP root inaccessible.
+user=root
+
+# Logging
+log-dhcp
+log-facility=@ROOT@/logs/dnsmasq.log
+
+# iPXE clients identify themselves with DHCP option 175
+dhcp-match=set:ipxe,175
+
+# Stage 1: firmware PXE -> hand out the matching iPXE bootloader over TFTP
+pxe-service=tag:!ipxe,x86PC,"iPXE (BIOS)",undionly.kpxe
+pxe-service=tag:!ipxe,BC_EFI,"iPXE (UEFI)",ipxe.efi
+pxe-service=tag:!ipxe,x86-64_EFI,"iPXE (UEFI)",ipxe.efi
+
+# Stage 2: iPXE -> boot script over HTTP.
+# (The bootloaders also have this embedded, so this is just belt-and-braces.)
+#
+# The third field sets next-server explicitly. Without it dnsmasq fills siaddr
+# for some clients and not others — a UEFI client here got one and a BIOS client
+# on the same network did not — and a client that builds its URL from
+# ${next-server} then produces "http://:8080/boot.ipxe", a URL with no host.
+# iPXE tries to resolve the empty name and reports "DNS name does not exist"
+# (error 3e11613b), which looks like a name-service fault and is really a
+# missing field.
+dhcp-boot=tag:ipxe,http://@SERVER_IP@:8080/boot.ipxe,,@SERVER_IP@

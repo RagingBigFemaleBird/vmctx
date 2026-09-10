@@ -1,0 +1,2699 @@
+=== add83c849 2026-07-27
+Vanilla Linux 7.0.14 baseline
+
+=== 0a789fb79 2026-07-27
+vmctx: a VM context as a first-class Linux process
+
+Adds a kernel facility that lets an ordinary process run its own user code
+as a hardware-virtualized guest, on its own page tables, while remaining an
+ordinary process: schedulable, killable, forkable, debuggable, and visible
+in /proc. The hardware backend lives out of tree (AMD SVM and Intel VMX);
+this is the generic half that everything else attaches to.
+
+  1301 insertions across 16 files, on vanilla 6.18.35.
+
+WHAT THIS IS
+
+A VM context is not a virtual machine. There is no guest kernel, no virtual
+devices, no separate address space. The guest is the calling process's own
+user code, executing at CPL3 on the process's own page tables, with
+second-level translation (NPT/EPT) mapping guest-physical to host-physical
+identically. What virtualization buys is a boundary: every fault and every
+syscall the guest makes leaves the guest and can be answered somewhere
+else — by this kernel, or by a monitor process, or by a different machine
+entirely.
+
+The point is that a process's execution can be separated from the resources
+its execution needs. Code and memory can live on one machine while the
+files, sockets and kernel state they act on live on another.
+
+WHAT IT ADDS
+
+  include/uapi/linux/vmctx.h   the ABI: vmctx_run(2), vmctx_ctl(2), the
+                               event and reply structures, the flags
+  include/linux/vmctx.h        struct vmctx_task, the backend interface,
+                               the hooks the core calls
+  kernel/vmctx.c               the core: context lifecycle, the run loop,
+                               generic syscall dispatch, monitor redirection
+  arch/x86/kernel/vmctx.c      the x86 syscall-dispatch shim
+  kernel/entry/common.c        guest entry from the return-to-user path
+  kernel/fork.c, exit.c        a context that forks; a context that ends
+  fs/exec.c                    a context that execs
+  fs/proc/array.c              a context visible in /proc
+
+  vmctx_run(2)   turn the calling process into a VM context and run it
+  vmctx_ctl(2)   a monitor process drives another task's context:
+                 ATTACH, DETACH, WAIT, RESUME, GETREGS, SETREGS, PEEK, POKE
+
+FIVE DESIGN DECISIONS, EACH ARRIVED AT THE HARD WAY
+
+1. The guest runs from the return-to-user path. vmctx_guest_step() is
+   called from exit_to_user_mode_loop(), so the guest runs exactly where
+   the kernel would otherwise have returned to userspace. Everything the
+   scheduler and the signal machinery already do at that point keeps
+   working, unchanged, for free.
+
+2. The task's pt_regs is the canonical guest register frame. Not a private
+   copy synced occasionally — the frame itself. Signal delivery, syscall
+   restart, rt_sigreturn, ptrace and /proc therefore operate on guest state
+   without knowing that a guest exists. When arch_do_signal_or_restart()
+   rewinds RIP by two on -ERESTARTSYS, it lands on the guest's SYSCALL
+   instruction, because that is what the frame describes.
+
+3. Syscalls dispatch through the host's own syscall table. There is no
+   per-syscall code in vmctx and no allow-list: a guest syscall is
+   marshalled into a pt_regs and run through x64_sys_call(). The deny list
+   started long and is now empty. Breadth came from refusing to enumerate.
+
+4. Faults are the host's own demand paging. The guest runs on the process's
+   page tables, so a not-present guest page is an unpopulated page of this
+   mm; fixup_user_fault() handles it and the instruction retries. Nothing
+   needs to know what the guest was doing.
+
+5. Fork, exec and threads are the kernel's, not ours. copy_thread() has
+   already prepared the child's frame correctly — RAX zero, RSP inherited
+   or the new thread's stack — so the backend copies the parent's context
+   and takes the child's registers from its own pt_regs. Threads need no
+   special case; that is why they work. clone() with CLONE_VM shares the
+   address space, so the kernel keeps one context and there is no child to
+   follow: treating that as a fork means waiting for a child that never
+   appears.
+
+MONITOR REDIRECTION, AND TWO BUGS IN THE HANDSHAKE
+
+A monitor process can service a context's faults and syscalls instead of
+the kernel. The context publishes an event, wakes the monitor, and sleeps
+until it replies. Two failures in that handshake took a long time to see,
+and both are worth recording because their symptoms pointed elsewhere.
+
+A monitor may be slow without being dead. The reply wait used a deadline,
+so a monitor that took its time was declared gone and the kernel answered
+the event itself — which for a context whose memory lives on another
+machine means fabricating an anonymous zero page. The guest then ran blank
+memory and died somewhere unrelated with nothing in the log. Liveness is
+polled now: the question is whether the monitor is alive, not how fast it
+answers.
+
+A signal must not make a syscall run twice. The wait gave up on a signal
+and returned VMCTX_ACT_RETRY, which rewinds the instruction so the guest
+executes it again — right for a fault, wrong for a syscall that has already
+run elsewhere, with its effects. A program read its resolver child's
+answer, took the SIGCHLD that child had just sent, re-executed the read,
+got the one trailing byte after the answer, and concluded the lookup had
+failed. Once the monitor has dequeued an event the wait is no longer
+interruptible; the signal is delivered on the way back to userspace, which
+is where a syscall's signals are delivered anyway. Separately, discarding
+an abandoned event's late reply also cleared ev_pending — which by then
+belonged to the event the context had already re-published — leaving the
+context waiting for a reply nobody knew to send and the monitor waiting for
+an event no longer on the queue.
+
+WHAT IT IS NOT
+
+Guest syscalls bypass seccomp, audit and ptrace syscall-stops: they are
+dispatched through the syscall table, not through the entry path that
+carries those. A context is as privileged as the process that created it
+and is not a sandbox. [vvar] and [vdso] cannot be transplanted between
+machines and are zero-filled when they are absent, which is logged loudly.
+
+VERIFIED ON HARDWARE
+
+Every claim was measured on real machines — AMD Ryzen 7 4800H (SVM) and
+Intel Core i7-7700K (VMX) — never in emulation. A browser installed only on
+one machine runs on the other and renders byte-identical output; in-guest
+compute runs at 99.9% of native on the same silicon.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+
+=== 6258d2b23 2026-07-27
+vmctx: wake the context that is waiting uninterruptibly for its reply
+
+  elinks -dump, both ends on one machine   2.5 s  ->  0.51 s
+
+A context waiting for its monitor's answer sleeps uninterruptibly once the
+monitor has dequeued the event — deliberately, because giving up there would
+re-run a syscall that has already executed on the other machine. But the
+monitor answered it with wake_up_interruptible(), which matches only
+TASK_INTERRUPTIBLE sleepers and passed this one by. The reply was sitting
+there; the context slept until the 2-second monitor poll expired, re-checked,
+found it, and carried on. Correct output, two seconds later.
+
+It needs a signal to arrive while the monitor holds the event, so it never
+showed on a short program — and a guest that forks is guaranteed one, since
+SIGCHLD arrives the moment its child exits. elinks forks even to render a
+local file, so eight runs in ten paid it.
+
+Found by timing what is neither fault nor forwarded syscall. That was 2.1 s
+of a 2.5 s run, and the guest turned out to be in state D in vmctx_report
+with close(7) outstanding — for exactly VMCTX_MONITOR_POLL.
+
+Every wake of reply_wq gets the same treatment: attach, detach and resume can
+all be answering a context in that wait.
+
+Verified: 8/8 on AMD and both LAN directions byte-identical, elinks over HTTP.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+
+=== 1a3d30044 2026-08-01
+vmctx: an exception event says which exception it was
+
+A reported fault carried an address and an error code but no vector, so the
+only exception that could be reported at all was the page fault. Every other
+one ended the context where it was raised, because there was no way to say
+what it had been -- and vmctx_report() is static, so a backend could not
+build the event itself either.
+
+The vector now travels in the event's spare number field, unread on the way.
+Which signal a vector becomes, or whether it becomes a signal at all, is the
+owning system's rule and not this one's; a context whose owner is not Linux
+would answer differently to the same report. So the kernel says 6, 13 or 14
+and interprets none of them.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+
+=== a1412c372 2026-08-01
+vmctx: bring this tree's vmctx up to the maintained one
+
+These three files had fallen far behind the copy the AMD box actually builds
+from -- 895 lines against 1225, with no backing_fd and no vmctx_force_fault,
+which is to say without the shared backing object that a context's memory
+comes from at all. Nothing here said so, and the tree looked authoritative.
+
+Rsynced over the box's tree on that assumption, it built and booted a kernel
+missing all of it. What caught it was the *module* failing to compile against
+the headers that had just been overwritten; had it compiled, a suite run
+would have been measuring a kernel quietly missing the memory model.
+
+So: taken verbatim from src/linux-6.18.35, which is the tree under version
+control and the one every kernel-side change of the last while has gone into.
+It compiles clean against 7.0.14, which is the evidence that the box's tree
+held this same content before it was clobbered.
+
+The two must not drift again. Whatever is deployed to a machine is edited in
+the repo that holds it, and a tree with no history behind it is not a source
+of truth for a machine that has one.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+
+=== 8bb572c15 2026-08-01
+vmctx: a mapping may name where in the backing object it comes from
+
+Everywhere else a guest virtual address is its own offset, which is what
+lets two contexts started with one object see the same page at the same
+address -- a thread, on a machine with no CLONE_VM. It also makes aliasing
+impossible: two addresses are two offsets and so two pages, permanently.
+
+Shared memory is aliasing. A reply may now say where the bytes come from
+instead of it being implied, and the ordinary case passes the address back
+unchanged. Only the side holding the file can know that two mappings are one
+page, so it is the side that says so.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+
+=== 671635d74 2026-08-01
+vmctx: a context may hold a shared object beside its own memory
+
+backing_fd is a context's own memory: a thread is handed its parent's, a
+process a copy, and that copy is what fork means. Shared memory is the one
+thing a fork must not copy, and an offset cannot express it -- two offsets in
+two different objects are two pages however they are numbered.
+
+So a second descriptor, in padding the config already had, inherited as it is
+rather than copied, and a map action that reads a range from it. A fault's
+answer may carry a mapping as a syscall's always could, because a context
+that inherited a shared range got it from the copy and its first touch is
+when to say otherwise.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+
+=== 4242de49b 2026-08-01
+vmctx: a shared mapping with no object is refused, not made private
+
+A NULL file means MAP_PRIVATE|MAP_ANONYMOUS in vm_mmap, which is right for a
+context given no memory object at all and wrong for a range the owner called
+shared: the guest gets private zeroed memory, every read of it comes back
+empty, and nothing says so.
+
+Found the way such things are always found. Wiring the monitor to use the
+shared object took tests/sm1 from one bad case to five -- including the three
+that had been passing -- because drop_monitor_fds keeps only backing_fd, so
+the shared object was closed in every context and every mapping from it
+became private. The mappings all 'succeeded'.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+
+=== b4bdd964e 2026-08-01
+vmctx: a fault says what this side knows about the page
+
+A page's permissions answer to two masters -- the program, whose protections
+live in the VMA, and the coherence protocol, which write-protects the PTE and
+leaves the VMA alone. Told only an address and an error code, a monitor
+decides between them from its own records and guesses when they are silent.
+The event's argument words are unused on a fault, so the state goes there.
+
+Nothing on this path may block on a lock. One caller is the kernel's own
+page-fault path, which arrives holding mmap_read_lock and may hold a
+page-table lock; taking either again is a deadlock, not a slow path. Found by
+doing it. That caller marks itself and is not inspected; the other only tries
+for the lock, and UNKNOWN is an answer rather than a failure to give one.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+
+=== b8709335b 2026-08-03
+vmctx: the assisted syscall on 7.0.14, and a call that ends where any syscall ends
+
+This tree carried the architecture in its working directory and never in a
+commit: the monitor-driven syscall, the service context, the register change
+mask, the per-page protection, and the signal ordering below. Every kernel this
+project has measured on the AMD box since was built from an uncommitted working
+tree, and src/ is not tracked by the repository that holds the userspace half,
+so the only record of any of it was a directory nobody backs up. That is the
+first thing fixed here.
+
+What it brings, matching what linux-6.18.35 already carries as commits:
+
+  - VMCTX_CTL_SYSCALL: the monitor supplies a number and arguments and the
+    *context* performs the call, in its own address space, with its own
+    descriptors and identity. A monitor may not make the call itself: it is a
+    different process, the same address is different memory in each of them,
+    and every pointer argument would be answered from the wrong memory.
+  - VMCTX_CTL_ADOPT and the service context: a task that holds an address space
+    and never executes. It needs no virtualisation backend, which is the whole
+    point -- the machine that owns a program does not have to be able to run it.
+  - the register change mask, including FSBASE and GSBASE, so a monitor learns
+    what a call moved without reading the register set twice and diffing it
+    across a machine boundary.
+  - vmctx_mprotect() per page, so a protection applies to the pages that exist
+    rather than failing on the first hole.
+
+And the one thing this tree has that 6.18.35 does not:
+
+A syscall does not end at the handler's return statement. What follows it on the
+way back to user mode is the rest of the ABI -- a pending signal is delivered as
+a frame pushed onto the program's own stack with the frame pointed at the
+handler, and -ERESTARTSYS becomes either a rewind onto the SYSCALL instruction
+or -EINTR. All of it is expressed as changes to one pt_regs, which is exactly
+what a monitor is handed back.
+
+That work was already happening. It happened one iteration later, in
+__exit_to_user_mode_loop(), after the registers had been snapshotted and the
+monitor woken with them -- and the next forwarded call's SETREGS overwrote the
+result. Measured on tests/sig1.c: after the guest's raise(3) the service context
+stood at rip 0x402070, the program's own SIGUSR1 handler, with a complete signal
+frame written into the program's stack at rsp 0x7fffffffe2f8, while the machine
+running the program carried on from the instruction after its SYSCALL, never
+entered the handler, and died in __printf_buffer with the frame sitting in
+memory it believed was free. Ten runs out of ten.
+
+So vmctx_do_monitor_syscall() runs that work itself, before it reports. Nothing
+here is specific to signals and nothing decides anything: it is the
+architecture's own return-to-user code, one step earlier, so the frame it leaves
+is the frame the monitor reports. The machine executing the instructions enters
+the handler knowing nothing about signals, which is the rule the design is built
+on.
+
+The other half is when there is no call to end. A signal is delivered at an
+instruction boundary, and a service context is never where the program is except
+while a forwarded call is in progress; everywhere else its frame is the leftover
+of whatever call it last made. So __exit_to_user_mode_loop() holds such a signal
+back and the park became killable, because an interruptible wait returns the
+instant TIF_SIGPENDING is set and would spin.
+
+Only a signal that has somewhere to go is held. Holding the others is not a
+deferral but a refusal, and tests/pf3.c said so at once -- three children that
+had earned a SIGSEGV reporting "exited 242 rather than dying".
+
+sig1 goes from 0/10 to 12/12. Independently re-measured over three full suite
+rounds: 60 passed, 3 failed, and the three are the pg2/pg3/th9-static coherence
+family that was flaky before this and is not touched by it.
+
+=== c5b9ccd7b 2026-08-03
+vmctx: hand a page over from the address space, not from one context
+
+VMCTX_CTL_TAKE works on one context: it pins the page, zaps that one VMA, and
+copies the bytes afterwards out of the pinned page. A guest address space on the
+destination is one backing object mapped MAP_SHARED into several contexts, each
+with page tables of its own, so everything that would make that copy safe is
+missing. The other contexts still map the same physical page and are not
+stopped, so the bytes change under the copy; nothing removes the page from the
+object, so any of them can fault it straight back in; and the TLB flush that
+comes with the zap reaches only that one mm, so a sibling's vCPU keeps a
+translation to a page it has been told it lost. Userspace then issues one of
+these per context and punches the object separately, which turns a single
+hand-over into a sequence with a gap at every join.
+
+None of those gaps can be closed from above, because each is a window inside an
+operation userspace cannot enter. Measured: a userspace attempt to fix the same
+race by reading the object after every context had let go made it worse, 8 tears
+across twelve runs becoming 20, because it widened the window it meant to close.
+
+So the hand-over becomes one operation. Under the object's folio lock -- which
+is what a fault on that offset blocks on in shmem_fault(), so no context can
+acquire the page while this runs -- unmap_mapping_range() removes it from every
+mm that has it, with each mm's own TLB flush rather than one mm's; the bytes are
+copied with no mapping left anywhere and every would-be faulter parked; and
+shmem_truncate_range() removes it from the object, so this side can no longer
+answer for it.
+
+One window is left and is named rather than hidden: the folio lock has to be
+dropped before shmem_truncate_range(), which takes it itself, and a context
+woken in that gap can map the page and write it before the truncate discards the
+write. Two calls wide, against a userspace loop and a separate punch.
+
+-ENOENT for a range that is not object-backed, and for a large folio, whose
+removal would take memory the caller never asked about. The caller falls back to
+the per-context path, which for those is no worse than before.
+
+Measured on tests/pg2.c, which writes one page from both machines at once:
+tears went 8 across twelve runs, to 1 across twelve, to 0 across eight, with 344
+to 616 hand-overs per run taking the atomic path and one falling back. pg2's
+other failure, the one it calls bad payloads, is unchanged by this and is not
+explained by it.
+
+Also recorded, in mm/memory.c: the fault hook's exclusion of VM_SHARED is
+correct, and the obvious suspicion that it starves a guest of its own memory is
+wrong. An instrument there fired zero times across four pg2 runs, three of them
+failing, against a control of 153 other vmctx messages reaching dmesg in the
+same runs. A guest's memory faults never reach the host fault path at all: its
+instructions run in a hardware guest, so a missing page is a nested page fault
+taken as a VMEXIT and handled by the backend.
+
+=== 0d12bdf2f 2026-08-03
+vmctx: a page may not change machines while anything here can still reach it
+
+Removing a page's page tables is not the same as removing every way to reach
+it, and both hand-over paths treated them as the same thing.
+
+A syscall this side performs pins its buffers with get_user_pages() and holds a
+struct page reference for the whole call. A driver may hold a kernel mapping. A
+device may already have the physical address in a descriptor. None of that is
+undone by a zap or by unmap_mapping_range(), which walk page tables and nothing
+else. So a page handed to the other machine while any of it is outstanding is a
+page this machine can still write -- after the other machine has been told it
+owns it and has begun writing it too.
+
+Concretely: the program reads from disk into a buffer, the call blocks on the
+device, and while it is blocked the other machine claims the buffer's page to
+write. The read completes and the driver writes into memory that now belongs to
+the other side, which is never told. Nothing in the page tables records that
+this is possible, and no test in this tree would see it.
+
+The kernel tracks all of it already, so vmctx_folio_may_move() asks instead of
+assuming: writeback is waited for, because it ends by itself; a DMA pin
+(FOLL_PIN) is refused, because it means precisely "a device may write this"; a
+page still mapped after the unmap is refused; and a reference count above what
+the page cache and its mappings account for is refused, which is what catches
+the get_user_pages() reference of a call that has not returned. It is the same
+comparison the migration code makes, for the same reason.
+
+Both paths use it: vmctx_ctl_take(), which is how a monitor gives a page back to
+the machine running the program and therefore where a pinned buffer would be
+handed away, and vmctx_ctl_takeobj().
+
+-EBUSY is not a failure. It says the page cannot move *yet*, and the caller is
+meant to wait and ask again. That is the escalation lock this design needs,
+stated where the facts are rather than inferred in userspace from syscall
+boundaries -- an earlier attempt at the latter was both too coarse to be usable
+and blind to every case above.
+
+NOT YET WIRED UP, and not yet run. The callers still read a negative answer as
+"this path will not work" and fall back, which for -EBUSY is wrong: they must
+wait for the page and retry. Committed at this point because the guard is
+conservative -- it refuses hand-overs that used to be made unsafely, and cannot
+make one that was safe unsafe -- and because the analysis belongs with the code
+rather than in a conversation. Compiles; no kernel built from it has been
+booted.
+
+=== 2e38603be 2026-08-03
+vmctx: the reference check is not usable as written, and says so
+
+folio_ref_count() against folio_expected_ref_count() would catch what the other
+two tests cannot -- a get_user_pages() reference held across a call that has not
+returned, a kernel mapping -- and it does not work here. An ordinary page on the
+LRU carries a reference the comparison does not account for, so it refused
+almost every hand-over: measured on tests/pg2.c at one hand-over in an entire
+run against three hundred, with the -EBUSY retries then stalling the run out and
+nothing passing. The migration code makes the same comparison only after
+isolating the folio from the LRU, which is the step this was missing.
+
+Removed rather than left in and wrong. What remains -- a DMA pin, and a page
+still mapped after the unmap -- is unambiguous, was not checked at all before,
+and costs nothing: measured over eight runs, 319 hand-overs and not one refused,
+because pipe I/O pins nothing. The reference case is named in the comment as
+known and uncovered rather than quietly dropped.
+
+=== 793eef162 2026-08-03
+vmctx: the reference check needs more than a drain, and still is not in
+
+folio_expected_ref_count() says of itself that the LRU cache does not apply, and
+memfd's own pin check and gup's both call lru_add_drain() immediately before
+making this same comparison -- so the per-CPU LRU batches looked like the whole
+of what the first attempt was missing.
+
+They are not. With the drain in front of it the comparison still refuses enough
+hand-overs to stop the system: pg2 0 of 6, and tests/dma1.c producing no output
+at all, on a kernel built and booted to find out (#38). Without it, one
+hand-over in an entire pg2 run against three hundred.
+
+So some other reference is held here that this does not expect, and what it is
+has not been established. Two kernels have now been spent guessing at it, which
+is enough. Out of the tree, with the case it exists for -- a page pinned by a
+device while the other machine claims it -- reproducing in dma1 and listed as a
+known gap. What is left in refuses a DMA pin and a page still mapped after the
+unmap: both unambiguous, both previously unchecked, and measured at 319
+hand-overs with none wrongly refused.
+
+=== 6732fbb40 2026-08-03
+vmctx: say what is actually holding a page, instead of refusing it
+
+Twice a refusal built on folio_expected_ref_count() stopped the system, and both
+times what was outstanding was guessed at rather than looked at. This reports
+instead: a page that would have been refused is named with the numbers, and
+handed over anyway, so the run stays measurable.
+
+Measured on tests/pg2.c, and it is the same answer every time, in two
+populations:
+
+  anon: refs=2 want=0(+1) mapcount=0 pinned=0 lru=0 anon=1 swapcache=0
+  file: refs=3 want=1(+1) mapcount=0 pinned=0 lru=0 anon=0 swapcache=0
+
+Exactly one reference more than accounted for, in both, on every page. Never a
+DMA pin, never a mapping left over, never the LRU -- so none of the things this
+check exists to catch, and none of the three theories the last two kernels were
+spent on. A constant off-by-one is an accounting error in how the caller's own
+references are counted, not a holder; the check was refusing hand-overs that
+were perfectly safe, which is exactly what its effect on the system looked like.
+
+The repair is not a corrected comparison. folio_ref_freeze() is how this kernel
+takes exclusive ownership of a page: it sets the count to zero if and only if it
+is what was expected, atomically, and fails if anyone else holds a reference.
+mm/migrate.c uses it and answers -EAGAIN. What this function does today -- read
+the count, decide, then copy -- is that test with a window in it, and would have
+to be replaced by the freeze even once the count is right.
+
+=== 74889415f 2026-08-03
+vmctx: claim a page by freezing it, not by deciding it looks free
+
+folio_ref_freeze() sets a folio's reference count to zero if and only if it is
+exactly what was expected, atomically, and fails if anyone else holds one. That
+is how this kernel takes exclusive ownership of a page; mm/migrate.c freezes
+before it moves a folio and answers -EAGAIN when the freeze fails.
+
+What was here instead read the count, compared it, returned, and let the caller
+copy afterwards -- the same question with a window after it, in which any
+reference could be taken. Even with a correct count that was never a claim.
+
+The count to expect is what the page cache and mappings account for, plus the
+references this caller holds, plus one. That last one is measured rather than
+argued: the instrument that replaced the previous refusal reported refs=2
+want=0(+1) for anonymous pages and refs=3 want=1(+1) for file-backed ones, on
+every page, with no DMA pin, no leftover mapping and nothing on the LRU. A
+constant off-by-one in both populations is an accounting error and not a holder,
+which is why two earlier kernels refused nearly every hand-over and stalled the
+system.
+
+The freeze is held only across the copy; vmctx_folio_release() undoes it once
+the bytes are out, because a frozen folio is one nothing may touch at all.
+
+COMPILES; NOT BOOTED AND NOT MEASURED. The three changes before this one each
+looked right and were refuted by the first run, so this is committed as
+unverified on purpose. 10.0.0.229 is left on #40, which works, and the next step
+is to build this, boot it, and check two things: that the system still runs at
+all, and that tests/dma1.c -- native 0 bad of 200, under vmctx 22 to 200 --
+starts refusing the hand-over instead of corrupting the page.
+
+=== f76e8e58c 2026-08-03
+vmctx: the extra reference was the LRU-add batch, on somebody else's CPU
+
+Freeze at the exact count the page cache and the mappings account for, plus
+the caller's own references. Not one more.
+
+Kernel #41 answered the question #38 and #40 could not, by failing the other
+way: it froze at exact+1 and refused 391k hand-overs in one suite run (6
+passed, 57 failed -- the #36/#38 stall reproduced), every refusal reading
+refs=2 want=1(+1) mapcount=0 pinned=0 lru=1. Pages already on the LRU have an
+exact count; there was no holder. The population #40 measured its +1 on was
+lru=0 -- pages still sitting in a per-CPU LRU-add folio batch, whose slot is a
+real reference folio_expected_ref_count() does not count. And #38's drain was
+lru_add_drain(), local, while the guest faults its pages in on another CPU,
+which is why draining did not help it. One transient holder, visible in one
+population and gone in the other; a constant satisfies neither.
+
+So the claim now freezes at the exact count, and when that fails on a folio
+not yet on the LRU it calls lru_add_drain_all() -- the _all is the point --
+and asks exactly once more. A failure after that is a real holder (a DMA pin,
+an unreturned get_user_pages, an in-flight read): -EBUSY, the caller waits
+and asks again, and nothing anywhere answers with bytes that are not the
+page's. The instrument stays, and now discriminates: an lru=0 refusal after a
+drain-all is a new fact, not the batch.
+
+COMPILES LOCALLY; BOOTED AND MEASURED AS #42 -- see the measurement appended
+to this message by amend after the run, per the standing rule that a kernel
+change is unverified until booted.
+
+=== 2cd21bfbe 2026-08-03
+vmctx: a page an in-flight syscall faulted in may not change machines
+
+Kernel #42 fixed the claim and dma1 still corrupted, 4 to 182 rounds in 200,
+and the page trace said exactly how. The guest's read(2) is performed at home;
+its buffer page ping-pongs: home faults it in (GET from the guest), the guest's
+other thread touches it and pulls it straight back (CTXPAGE -> take), home
+faults again -- and the take that lands between the fault-in and
+get_user_pages()'s pin succeeds *rightly*, because in that window the count is
+exact and no pin exists yet. The other machine is handed the page's pre-DMA
+bytes; the device then completes into a page nobody calls current any more.
+Zero 'page busy' refusals in the whole run: every claim that fired was correct.
+The hole is that the claim cannot see a toucher that has not pinned yet.
+
+So the syscall says so itself. vmctx_do_monitor_syscall() opens a window;
+a page the monitor supplies to a fault inside that window is recorded on the
+context (address only -- the fault path holds mm locks and may not walk
+anything); VMCTX_CTL_TAKE and VMCTX_CTL_TAKEOBJ answer -EBUSY for a recorded
+page until the call completes, and every taker already treats -EBUSY as 'wait
+and ask again'. The list empties when the call ends. If it overflows, every
+page is held until the call ends and the log says so -- a silent cap here is a
+silent corruption window.
+
+This is the escalation lock built twice before and backed out twice, expressed
+this time where the facts are: the syscall is the atom, the page is the unit,
+the record precedes the pin, and the wait is bounded by the call's own
+duration. The global form stalled everything (suite 21/21 failed); this holds
+only what the call actually faulted in.
+
+COMPILES PENDING; NOT BOOTED, NOT MEASURED. Built as #43; measurement follows
+in this commit's amendment or its revert.
+
+=== 821e09f55 2026-08-04
+vmctx: hold only the pages a syscall faulted in to WRITE
+
+Kernel #43 held every page its syscall faulted in, and futex_wait(2) refuted
+it on the first quiet run: it faults in the futex word -- a read -- then
+blocks, and the hold kept the other machine from taking the page, so the
+store that would have woken the futex could never land. th9's threads never
+finished; the teardown that followed left a service context asleep
+uninterruptibly in vmctx_report() with mmap_read_lock held, and pkill
+(which reads /proc/pid/cmdline, which wants that lock) wedged in D-state
+behind it, followed by ps, rmmod and the whole suite. Load six, zero CPU,
+no oops, nothing in dmesg -- the kernel stacks were the only witness:
+
+  futex_wait -> get_futex_key -> get_user_pages_fast -> do_anonymous_page
+    -> vmctx_anon_fault -> vmctx_redirect_fault -> vmctx_report (D, forever)
+
+A read fault-in imposes nothing on hand-over: if the page moves, the next
+read faults and asks again. A write fault-in is the dma1 case -- the device
+writes after the fault -- and those are still held. One condition:
+FAULT_FLAG_WRITE.
+
+Also learned, and recorded here because the stacks are gone when it matters:
+a context wedged this way is freed by killing its *monitor* by pid (the
+report loop polls monitor liveness), never by pkill by name, which hangs on
+the same lock it is trying to free.
+
+NOT BOOTED, NOT MEASURED; #44 next.
+
+=== ad073c69c 2026-08-04
+vmctx: name every refusal, time every step
+
+Instrumentation, not behavior. Three sessions of this work have one lesson
+between them: the diagnosis is only ever as good as the instrument, and the
+silent paths are where the nights went. So:
+
+- vmctx_folio_claim(): the two early -EBUSY returns (dma-pinned, still
+  mapped) now say so, rate-limited, with the counts. Under #42 dma1
+  corrupted with zero 'page busy' lines because these two were the refusals
+  that fired, silently.
+- the syscall-hold refusal in TAKE and TAKEOBJ logs which page, which
+  in-flight syscall holds it, and who asked.
+
+The userspace halves gain monotonic-microsecond timestamps and tids on every
+page-trace line, and step-duration fields on the four operations that move a
+page: vmhome's SERVE take and fault-service GET, vmremote's GET take and
+CTXPAGE pull. Who asked, which page, what operation, the result, and how
+long it took -- enough to see which step misbehaves instead of inferring it
+from the wreckage afterwards.
+
+=== adacb14cd 2026-08-04
+vmctx: the syscall's held pages belong to the address space, not the context
+
+The timed trace answered in one line what three unmeasured guesses would
+not have: SERVE take-step ctx=10479 r=4096 us=87, eighty-seven microseconds
+after the same page was installed for a fault recorded on ctx=10471. Two
+threads, two service contexts, one mm -- the read(2) faults its buffer in
+on context A, the take arrives naming context B, and a holds-check that
+read only B's ledger let the page go before get_user_pages() could pin it.
+
+vmctx_syscall_holds() now walks the target's thread group and asks every
+context's ledger. A forked context has its own mm and its own pages, so
+threads are exactly the set that shares the hazard.
+
+=== a8fae7bc1 2026-08-04
+vmctx: a taken FAULT event still yields to a fatal signal
+
+The uninterruptible reply wait exists for syscalls, where a re-run has
+effects: the 26-line comment about a read() consuming its bytes twice is
+correct and untouched. A fault has no such hazard -- asking for a page twice
+is asking for a page -- and the uninterruptible form was measured twice
+doing real damage: a monitor that took a fault event and never answered
+('monitor still working on one event after 60s (alive; waiting)') left the
+context asleep in vmctx_report() holding mmap_read_lock. pkill reads
+/proc/pid/cmdline, which wants that lock, so the cleanup joined it in
+D-state, then ps, then rmmod, then the suite: load 6, 0% CPU, twice in one
+night, unwedged both times only by killing the monitor by pid.
+
+So a taken fault waits killably. On a fatal signal the event is marked
+abandoned under ev_lock -- the machinery that already exists so a late reply
+is discarded rather than applied to the next event -- and the context ends.
+vmctx_anon_fault() then fails the fault with SIGBUS instead of falling back:
+the fallback would have do_anonymous_page() invent a zero page as the dying
+task's last act, which is the one thing no path here may do.
+
+local-here.sh's leftover cleanup now also finds its dead by /proc/*/comm and
+kills by pid; pkill/pgrep read cmdline and block on exactly the task they
+were sent to kill.
+
+NOT BOOTED, NOT MEASURED; #47 next.
+
+=== ccce17e2e 2026-08-04
+vmctx: a fault unanswered for two seconds is stuck, and says so
+
+No correct resolution of a page fault takes two seconds: the bytes are on
+this machine or one LAN hop away, and every step that can legitimately
+stall -- a take against a DMA pin or a syscall's write hold -- is bounded
+under one second below this deadline. So vmctx_report() now gives a FAULT
+event two seconds, and on expiry prints the fault (address, error code,
+rip), names the monitor that failed to answer, dumps the waiting task's own
+kernel backtrace -- the exact chain do_anonymous_page -> vmctx_anon_fault ->
+vmctx_report that took two nights to obtain by hand from /proc/pid/stack --
+abandons the event so a late reply is discarded, and ends the context with
+SIGBUS rather than a fabricated page.
+
+Syscall events keep the unbounded wait on purpose: servicing one can mean
+executing a blocking read on another machine, which finishes when the world
+says so. A fault has no such excuse.
+
+The userspace bounds shrink to fit inside it: vmhome's SERVE take and
+vmremote's TAKEOBJ wait 1s (was 2s), and both print a userspace backtrace
+on expiry; vmhome's page channel gets a 2s SO_RCVTIMEO so a stuck peer is
+a loud step-failure instead of a thread parked in read() forever.
+
+The principle, stated once: a timeout is a diagnosis. Every bounded wait
+that expires names who was waiting, on which page, for what, for how long,
+and where it stood.
+
+=== 97eba8e79 2026-08-04
+vmctx: a held page expires; the pin is the protection, the hold is the handoff
+
+The fail-stop found the deadlock's author, and the group stack dump named
+it in four lines: the context refusing to return the stack page was asleep
+in futex_do_wait inside vmctx_dispatch_syscall, while its sibling sat
+parked and idle. An assisted futex_wait write-faults its caller's stack on
+entry (get_futex_key does a write GUP), the fault recorded the page, and
+the hold then lasted as long as the sleep -- which lasts until the other
+machine's guest issues the wake, which it cannot do without the very stack
+page being held. The syscall's semantics and the hold's lifetime formed
+the cycle; no ordering fixes that.
+
+The hold's actual job was always narrower than a syscall: it closes the
+window between the fault-in and get_user_pages() pinning the page, because
+after the pin the claim already refuses by refcount with no help. That
+window is microseconds. So each recorded page now expires 100ms after its
+fault (a fresh fault renews it), and the overflow flag carries the same
+TTL. dma1's device path is unaffected -- its pin lands within the TTL and
+takes over -- and a blocking syscall stops holding its peer's stack
+hostage against its own wake-up.
+
+BOOTED AND MEASURED as #49 (m51): dma1 4 of 5 standalone runs 0 bad in 200
+plus two suite XPASSes, the one failure a single bad round -- the 200/200
+fork mode is gone entirely. No FATALs, no deadlocks. Suite 58/63 with ex4,
+pg1 and pg2 all recovered; th9 (x2) and pg3 (x3) remain, both pre-existing
+flakes. Across the ~1000 dma1 rounds this kernel has run: one bad round.
+
+=== d68bb4b6e 2026-08-04
+vmctx: never abandon an event the monitor has already taken
+
+pg3 died 3 of 3, and the sum-instrumented trace plus dmesg named the cause
+without a guess in it:
+
+  pid 432385: a reply arrived for an event its waiter had abandoned;
+              the syscall may have run twice
+  pid 432385: did not perform the monitor's syscall 0 (context gone)
+  usercode: unrecoverable guest #PF pid 432387 at 0x0 err 0x14
+
+No deadline warning precedes those, so the only path that could have set
+ev_abandoned is the fatal-signal branch added with the killable fault wait.
+It ended a service context while its monitor was mid-answer; home's next
+syscall for that context was refused (context gone), every following
+VMCTX_CTL_TAKE answered -EINVAL ('not a VM context', kernel:2144), the
+CTXPAGE pull answered -EFAULT, and the guest -- with no stack page -- died
+fetching instructions at address 0. The userspace trace agrees exactly:
+GET take sum=6b6dadd8 delivered, then take r=-1 EINVAL, peek g=-22,
+pull -> -14.
+
+So the branch goes. Nothing is lost: the fault deadline two screens down
+ends a genuinely stuck fault at two seconds regardless of signals, and that
+is what prevents the wedge this branch was written for. The sleep stays
+killable so SIGKILL is not ignored; what it may no longer do is discard
+work the monitor has already started -- the precise hazard the
+uninterruptible-wait comment has warned about since it was written.
+
+NOT BOOTED, NOT MEASURED; building as #50, and pg3's 3-of-3 is the control.
+
+=== 0d5bccaec 2026-08-04
+vmctx: ask whether a page may move before destroying the way to ask
+
+VMCTX_CTL_TAKE pinned the page, zapped the page tables, and only then asked
+vmctx_folio_claim() whether the folio could move. When the answer was no it
+returned -EBUSY with the page already unmapped, and for anonymous memory that
+is everything the address had: the next take answered "nothing here" about a
+page the program had owned a millisecond earlier, and a live thread stack
+became an empty page. PRINCIPLES.md §2 says -EBUSY means "wait and ask again";
+waiting only works if the refusal leaves something to come back to.
+
+vmctx_folio_precheck() now asks, before the zap, every part of the question
+that can be answered while the page is still mapped: writeback, a DMA pin,
+mappings beyond the one this zap removes, and the reference count the claim is
+about to compare against. folio_expected_ref_count() counts one reference per
+page-table mapping and the zap drops both a mapping and its reference, so the
+difference between the real count and the expected one is invariant across the
+zap -- zero before means zero after unless somebody races, and that residual is
+waited out here, where the page can still be waited for, before it is counted
+as lost. vmctx_ctl_takeobj() asks the same question before its
+unmap_mapping_range(), where a refusal is cheaper still.
+
+vmctx_folio_claim() is unchanged and still authoritative. Nothing here hands
+over a page anything else can reach, weakens the dma1 refusal, invents a page
+(FOLL_NOFAULT stays), or turns -EBUSY into an answer.
+
+And the take now counts every way it can end, in
+/sys/module/kernel/parameters/vmctx_take_*, because the one instrument that
+reported this refusal -- "page busy #%ld" -- prints its first eight lines since
+*boot* and then one in 1024, so ten runs of pg3 reported zero refusals while
+destroying a dozen pages each. vmctx_take_claim_first and vmctx_take_retries
+switch the change off, so the old behaviour is measurable on the same boot
+rather than remembered from another kernel.
+
+Measured, pg3, one boot, 10.0.0.229, #52:
+
+  claim_first=N retries=0   5..14 refusals per run, every one after the zap,
+                            the page destroyed by every one, 3/4 PASS
+  claim_first=Y             11..27 refusals per run, every one before it,
+                            the page destroyed by none, 30/30 PASS
+
+with vmhome's own pagemap read either side of each refusal agreeing run for
+run. suite.sh 3: 61 passed, 2 failed (dma1 XPASS once).
+
+=== 214749ac5 2026-08-04
+vmctx: split what cannot be answered for, and name what refused
+
+A take asks vmctx_folio_precheck() whether a page may move before it
+destroys the way to ask. Three things it could not answer, measured on
+10.0.0.229 and fixed or named here.
+
+A large folio has no answer at all: folio_mapcount() counts the folio's
+mappings and this unmap removes one 4 KiB page's worth, and the
+difference is not knowable. The precheck declined and left it to the
+claim, after the zap, where a refusal costs the page -- take_large=6,
+take_lost=6 over one suite run, exactly equal. Guessing the count is not
+available, so the folio stops being large: vmctx_split_large() splits it
+to order 0 first, with the take's own FOLL_GET as the single caller
+reference split_huge_page() requires and which it transfers to the page.
+Every failure is -EBUSY with the page still mapped: a folio someone else
+holds locked (trylock, because this runs under the target's mmap_lock and
+the caller has its own retry loop), a reference the split's freeze
+refuses, hugetlb, or an -ENOMEM that left it still large. take_lost is
+now 0 over 3.1M takes in a suite and 3.8M in sixteen pg3 runs.
+
+The precheck drained the per-CPU folio batches only for a folio that was
+not on the LRU, reasoning about the LRU-add batch. folio_activate(),
+lru_deactivate_file(), lru_lazyfree() and the mlock batches all hold a
+reference to a folio that is already on it, so lru=1 excluded exactly the
+holders that could still be batched. Draining on any mismatch takes the
+pre-zap refusals in a pg3 run from 11-27 to 0, and counts what it
+resolved: take_drained, 1,052,039 of 2,380,022 takes in ten runs.
+
+What was left is the shared zero page, and it is the one -EBUSY in this
+file that does not mean "not yet": PG_reserved, a global refcount, so
+refs=2 against want=1(+1) for ever. Sixteen pg2 runs: take_refused=4004
+and take_zeropage=4004, exactly equal, 1001 of them in each run that
+died. (The stall was recorded as refs=3 mapcount=1 anon=1, read out of a
+pr_warn_ratelimited -- under a rate limit the line you see is not the
+line that repeated. Counters cannot be rate-limited.) Answering ABSENT
+for it was tried and measured worse, 10/16 against 12/16 on one boot,
+with the deaths changing from a named FATAL to the guest dying of its
+own accord, so the switch is off and the refusal stays -- with a line
+saying no retry can succeed. The repair belongs where the zero page was
+installed.
+
+Each of the three has a switch, so both arms are measurable on one boot.
+
+=== e5005619b 2026-08-06
+vmctx: a page of a context, faulted by anyone else, is nobody's to invent
+
+The two mm hooks ask `current->vmctx` -- whether the *faulting task* is a VM
+context. That is the wrong question. What decides whether this kernel may invent
+a page is whose address space it belongs to, and the two differ every time a
+monitor reads or writes a context's memory: get_user_pages_remote() faults the
+*context's* mm while current is the monitor, so the hook does not fire and
+do_anonymous_page() supplies the page with nobody asked and nothing recorded.
+ptrace and process_vm_readv reach a context the same way.
+
+Counted rather than closed, because answering it properly means reporting a
+fault on behalf of a task that is not current, and the context has one event
+slot which it may be using itself -- a design change, not a patch.
+
+    /sys/module/kernel/parameters/vmctx_foreign_all   every anonymous fault on
+                                                      a foreign mm
+    ...foreign_ctx                                    ...where that mm belongs
+                                                      to a live VM context
+    ...foreign_read                                   ...and the fault was a
+                                                      READ
+
+The split is the whole of it. A write is how a monitor installs a page it
+already holds: the kernel gives it an empty page a moment before the poke covers
+it, which is noisy and harmless. A read is not -- nothing is about to write real
+bytes over it, so what the reader gets, and what the context keeps, is a page
+this kernel made up for an address whose contents are on another machine.
+
+Measured on tests/pg3, ten runs: foreign_ctx 21000 to 79000 per run, of which
+reads are 0 to 2. So the hole is real and this workload walks through it
+constantly in its benign direction; the dangerous direction is rare here and
+does not separate a failing run from a passing one.
+
+An address space is registered when a context starts holding a program and
+forgotten when it stops -- 64 slots, a spinlock, and consulted only for a fault
+on an mm that is not the faulting task's, which is rare.
+
+=== 1ed649243 2026-08-06
+vmctx: a read of a page a context does not hold is refused, not invented
+
+The counters added beside this said the hole was real and named its two
+directions. This closes the one that matters.
+
+A fault on a context's address space taken by somebody who is not that context
+cannot be reported to the context's monitor, and the reason decides the shape of
+the fix rather than merely complicating it: the commonest such faulter IS the
+monitor, writing the page in order to answer the fault it was just asked about.
+Reporting it would have the monitor wait for itself. Measured, ten pg3 runs:
+21000 to 79000 of these per run.
+
+So the question is not who faults but which way:
+
+  a WRITE is somebody about to put real bytes at that address -- a monitor's
+  POKE installing a page it already holds. Whatever the kernel allocates is
+  covered before anyone reads it, so let it allocate.
+
+  a READ has nothing coming to cover it. What the kernel allocates IS the answer
+  the reader takes away, and for a context's address space that answer is a page
+  of zeros invented for memory that lives on another machine -- PRINCIPLES.md
+  section 3, in the last place in this design that still did it. There is
+  nothing to ask, so it is refused: the fault fails, get_user_pages() turns that
+  into a short read, and access_process_vm() returns what it managed. "This side
+  does not hold that page" is a sentence every caller of PEEK already knows how
+  to hear.
+
+Measured on tests/pg3, arms alternating on one boot, one binary, the switch the
+only difference:
+
+    vmctx_foreign_refuse=N   2 of 8 passed
+    vmctx_foreign_refuse=Y   8 of 8 passed
+
+with 1 to 2 foreign reads per run refused in the passing arm and answered with
+an invented page in the failing one. Each is fatal on its own: the fabricated
+page sits in the context's address space as if this side held it, and because
+nobody was asked, the ownership record still says the page was handed over. Both
+machines then hold one page and neither asks again, which is the state a sweep
+of that record finds in every failing pg3 run and no passing one.
+
+Then, on the same kernel: suite.sh 3 is 66 passed, 0 failed -- every case, all
+three rounds, pg3 among them -- and pg1, pg2, rd1, sm1, sm2, sm3 and fm1 are 6
+of 6 each. Over that whole regression: 1329431 faults on a context's mm by
+another task, of which 23 were reads and 18 were refused.
+
+=== a301949e5 2026-08-06
+vmctx: the write-protect path cannot invent a page, and now that is measured
+
+do_wp_page() is the third way into a context's memory and the only one with no
+hook. It has none for a reason worth stating: it runs with the page-table lock
+held, so asking the monitor means sleeping there, and answering properly means
+unlocking, asking, and retrying the fault -- where a retry the monitor did not
+actually resolve is an endless fault. So this measures the hole rather than
+building on it, and then closes the only part of it that can fabricate.
+
+Counted first, split by who faulted and by what kind of mapping. Over the page
+and fork tests, four runs each: do_wp_page() fires about once per run for a
+context's address space, and every occurrence is a page whose bytes are already
+on this side -- 4 of them a monitor's POKE breaking the copy-on-write of a
+private file page on purpose (the take needs its own copy before it can move
+one), 1 dirtying a shared file mapping, 4 a context writing a page it holds.
+pg1 and ex5 produce none at all.
+
+That is the difference from do_anonymous_page(), where the kernel creates a page
+out of nothing: here it copies or dirties bytes that exist. There is exactly one
+exception, and it is now refused rather than argued away -- a write to the
+*shared zero page*, where there is nothing to copy and what the write gets is a
+freshly zeroed page for an address whose contents may be on another machine.
+Refused for the same reason a foreign read is: there is nothing to ask, and a
+page this kernel made up is not an answer.
+
+    vmctx_wp_own / _foreign / _shared / _filed   what hits the path, by kind
+    vmctx_wp_zero / _zero_refused                the case that would invent one
+    vmctx_wp_zero_refuse                         the switch
+
+Measured on 7.0.14-vmctx #60: suite.sh 3 is 66 passed, 0 failed with dma1
+XPASSing all three rounds, pg3 is 12 of 12, and over the whole regression
+vmctx_wp_zero is 0 -- so "nothing on this path is invented" is a number with a
+denominator, and the refusal is armed for the day it stops being one.
+
+=== ca3e690e2 2026-08-06
+vmctx: a context writing its own zero page is not inventing anything
+
+do_wp_page's refusal was argued entirely about foreign faulters and then
+written as if only they could reach it. They cannot. A context writing a zero
+page of its OWN address space is the ordinary copy-on-write that follows its
+own read: the read installed the shared zero page, and whether zeros were the
+right answer was settled THEN, by do_anonymous_page and by the monitor that
+declined it. Refusing the write second-guesses a decision already taken, and
+there is nothing left to ask -- the page is present and it is this task's.
+
+Measured: it costs a browser. Both netsurf and links2 -g die in a VM context
+on exactly one refused write,
+
+	unrecoverable guest #PF at 0x7eee733151a0 err 0x7 (-14)
+
+err 0x7 being present|write|user -- a protection fault, not a missing page --
+and -14 the SIGBUS arriving as EFAULT through fixup_user_fault(). Alternating
+arms, two each, one boot: with the refusal on, neither browser draws a pixel
+(0 windows, 1 colour on a 1280x1024 root); with it off, both render exactly as
+they do natively -- netsurf 3 windows, links2 2 windows, same colours.
+
+Turning the whole guard off is not the answer, and that is a measurement too:
+suite.sh 3 with vmctx_wp_zero_refuse=N gives 67 passed, 2 failed -- pg3 and th9
+-- and vmctx_wp_zero climbs from 1 to 70. The guard is load-bearing. So it is
+narrowed rather than removed: the foreign write it was written for is still
+refused, and the context's own write is let through and counted, so "the guard
+never fires for its own" stays a measurement rather than an assumption.
+
+=== 1296bc80d 2026-08-09
+vmctx: a read-only file page can only differ from the file after it was sealed
+
+The forwarded openat() that returns ENOENT for a file that exists reads its
+path string out of a read-only file mapping this side served from its own copy
+of the file while the current bytes were on the other machine. Found from
+Firefox; tests/rf2.c is the shape, and it opens a decoy when the defect fires.
+
+The fault hooks asked the monitor for two mapping classes and answered the rest
+locally. Every widening of that was measured and refuted before this one stuck:
+asking about every private file page filled zeros over rodata (6 of 69); a
+file_local short-cut that served the local file for anything not handed over
+served stale writable-file data (sm2/sm3 = 0), fixed by deciding after the
+fetch rather than before; asking about every read-only file page flooded the
+network and pulled a running guest's own text home (34 of 48).
+
+What is true and what this rests on: a read-only file page's contents can differ
+from the file in exactly one case -- it was writable, the guest wrote it, and it
+was sealed read-only (RELRO). A page read-only since its mmap can never have
+been written by the guest, so the file here is its current bytes. So the owner
+records the seal (a forwarded mprotect to PROT_READ) and asks the far machine
+ONLY about sealed pages, serving every other read-only file page locally exactly
+as before -- which is why the thread/page tests are undisturbed. A sealed page
+is COPIED (VMR_PG_GETS), not moved: the guest keeps its read-only copy and this
+side gets the relocated bytes.
+
+The kernel half:
+
+ - do_fault() asks about every private file mapping, gated behind
+   vmctx_fault_ro_file (default on); the class travels with the fault in
+   args[2] (VMCTX_PGC_*), 0 from a backend so an old monitor is unaffected.
+ - vmctx_install_single() installs one page per fault for a context's memory:
+   finish_fault's large folios, do_set_pmd, the anonymous/​swap batch paths and
+   the anonymous-PMD short-cut all plant neighbour pages nobody faulted on, and
+   for a context a neighbour may live on the other machine. Gated behind
+   vmctx_batch_install.
+ - the in-flight-syscall hold covers SELF-answered write fault-ins too, not only
+   monitor-supplied ones: a page the local kernel installs mid-syscall that the
+   call then writes must not change machines, or the write is lost (dma1).
+
+Also carried because the exported patch set is the only record and this was
+found living only on the build box: switch_fpu_return and
+fpregs_assert_state_consistent are exported to the vmctx module beside KVM in
+arch/x86/kernel/fpu/core.c; without it a kernel built from this tree refuses the
+module.
+
+Validated on 10.0.0.229 kernel 7.0.14-vmctx #67: suite.sh 3 = 72 passed 0 failed with the fix on (dma1 XPASS), rf2
+3/3, the thread/page tests undisturbed.
+
+=== d8f4d3d6b 2026-08-10
+vmctx: count the pages a syscall wrote that did not survive it, with a denominator
+
+The kernel already knows exactly which pages a forwarded call faulted in to
+WRITE -- vc->sys_pages[] -- and at the end of the call it threw the list away
+without ever looking at it. A page on that list that is no longer present was
+taken while the call was writing it, so whatever the call stored went to a copy
+the guest cannot see: a lost write, which is the shape pg3 fails with under a
+pool (one round stale, with the forwarded read having returned all 18 bytes).
+
+So the list is now checked before it is discarded, and the answer is: it does
+not happen. 5.09 million written pages checked across eight 16-run pools, ZERO
+lost; about 1 in 5.7 million overall. The hold works.
+
+The denominator is the point and is why there are three counters rather than
+one. The first version of this had only vmctx_syscall_pages_lost, it read 0
+after a failing pool, and 0 there is indistinguishable from 'the check never
+ran' -- which this project has been fooled by before. vmctx_syscall_pages_checked
+is what turns it into evidence.
+
+vmctx_hold_ttl_ms comes with it, for the same reason: the 100ms hold was the
+prime suspect and had to be ASKED rather than argued. 64 pool runs per arm,
+alternating, 100ms against 10000ms: 7 failures against 3, with one block
+backwards. Noise. The TTL is innocent and the knob stays so the next person does
+not have to rebuild a kernel to re-ask.
+
+Neither of these fixes pg3. Both of them close off a hypothesis that looked
+obvious and would have been expensive to keep believing.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+
+=== 94143da34 2026-08-10
+vmctx: make the named TAKEOBJ window measurable, and measure it
+
+vmctx_ctl_takeobj() closes the hand-over's gaps by locking the folio, unmapping
+it from every mm, copying with every would-be faulter parked, and only then
+removing it from the object. Its comment names the one window that survives:
+
+  'the folio lock has to be dropped before shmem_truncate_range(), which takes
+   it itself. A context that was blocked in shmem_fault() can be woken in that
+   gap, map the page and write it, and the truncate then discards the write.'
+
+That is a lost write, it is exactly the scenario to suspect when two threads
+share a page and one of them makes a syscall, and it had never been tested.
+Closing it means removing the folio while still holding its lock, which means
+doing shmem's alloced accounting by hand (shmem_recalc_inode is not in a public
+header) -- page-cache surgery worth doing only if the window is what a guest
+actually loses writes through.
+
+Widening it costs nothing and answers that, so vmctx_takeobj_gap_us inserts a
+udelay between the unlock and the truncate. Default 0; the shipped path is
+byte-for-byte what it was.
+
+MEASURED, sh2 under an 8-way pool, 320 runs per arm, arms alternating:
+
+  gap=0us     23 failed
+  gap=500us   30 failed
+
+7.2% against 9.4%, p about 0.33. A 500us delay is a ~500x widening of a gap
+normally around a microsecond; if this window were the cause the rate would have
+exploded rather than moved two points. It is not the cause.
+
+Recorded because the first sample said otherwise: 32 runs per arm gave 1 against
+5 on sh2 and 2 against 4 on pg3, a clean-looking 3x that would have justified the
+surgery. The same thing happened with the hold TTL earlier today -- 15/16 vs
+16/16, then noise at 64 per arm. Small samples on a race are how this project
+buys wrong fixes.
+
+The knob stays, inert, so the next person can re-ask in one command instead of
+rebuilding a kernel.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+
+=== bc380de25 2026-08-11
+vmctx: the page leaves the object under its own lock, closing the last hand-over window
+
+vmctx_ctl_takeobj() locked the folio, unmapped it from every mm, copied it with
+every would-be faulter parked in shmem_fault(), and then DROPPED THE LOCK before
+shmem_truncate_range(), because that takes the lock itself. Its own comment named
+what that costs: a context parked in shmem_fault() can be woken in the gap, map
+the page, write it, and the truncate discards the write. The guest stores a value
+and it is gone, silently -- the source is handed the copy taken before the store
+and hands that copy back later.
+
+filemap_remove_folio() is what shmem_truncate_range() would have reached, and it
+REQUIRES the folio locked, which is exactly the property that makes it right
+here: the removal happens with every faulter still parked, and they wake to a
+hole and go ask the machine that now owns the page. shmem_recalc_inode() is the
+accounting shmem_undo_range() does afterwards; skipping it would leak the
+inode's alloced count once per hand-over. Neither has a public declaration
+because nothing outside mm has needed them; vmctx is built in, so the extern is
+declared here.
+
+There is no longer a moment in this operation when the page is both absent from
+every page table and still available in the object.
+
+Measured: suite 75 passed / 0 failed, unchanged. hx1's lost-write rate went 3 of
+12 to 2 of 12 with this alone -- so the window was REAL and was NOT the whole
+bug, which is why the userspace half of this fix exists too.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+
+=== 2e945a649 2026-08-11
+vmctx: the hand-over is atomic under contention -- the lock is the exclusion, not a freeze
+
+vmctx_ctl_takeobj() froze the folio (folio_ref_freeze via vmctx_folio_claim)
+after unmapping it, to prove no one could write it during the copy. Under
+multi-context contention that freeze is a LIVELOCK: a faulter reaches the folio
+through __filemap_get_folio, takes a speculative page-cache reference, and only
+then blocks on the folio lock -- so with four contexts faulting one page the
+reference count is never the expected value, folio_ref_freeze never succeeds,
+TAKEOBJ returns -EBUSY for ever, and userspace falls back to the per-context
+take, which splits the address space (some contexts lose the page, some keep
+it). tests/hx1.c is exactly that: four threads writing their own words in one
+page while a forwarded read keeps wanting it, and a thread reads its own store
+back thousands of rounds stale.
+
+The freeze is unnecessary here. This path holds the folio lock across
+everything, and unmap_mapping_range() under i_mmap_rwsem removes every mapping
+in every mm; after it no CPU has a PTE and none can make one, because a fault
+for this offset blocks in shmem_fault() on the lock we hold. References held by
+those blocked faulters are harmless -- a reference is not a mapping, and only a
+mapping can write. The LOCK is the exclusion.
+
+The one writer the lock does not stop is a device holding a DMA pin, which is a
+refcount not a mapping and survives the unmap. So folio_maybe_dma_pinned() is
+checked twice: once before the unmap as a cheap early-out, and once after --
+the check that counts, at the last instant a pin can exist, since once the PTEs
+are gone GUP-fast finds none and GUP-slow blocks on the lock. folio_mapped()==0
+is asserted there too; a non-zero value would mean the invariant is gone, so it
+refuses rather than copy a page something can still write.
+
+Measured: suite 75 passed / 0 failed (isolated: this kernel change alone, with
+userspace unchanged), vmctx_takeobj_lost stays 0, and the four-context livelock
+is gone. The per-context fallback no longer runs for hx1's page.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+
+=== 68647b725 2026-08-12
+vmctx: the source's clear-tid, and the destination holds no clone
+
+Two edits the source-runs-the-real-clone3 rearchitecture needs from the
+kernel that owns the program:
+
+  - VMCTX_CTL_GET_CLEAR_TID hands the monitor a context's clear_child_tid
+    -- the word CLONE_CHILD_CLEARTID recorded when the source ran the real
+    clone. The monitor clears it coherently at thread exit (take the page,
+    write zero, wake a joiner) rather than let do_exit write it into a page
+    the machine running the guest holds, which the guest never sees and
+    pthread_join then spins on. Nobody parses clone_args to get it.
+
+  - vmctx_copy_task tolerates a backend with no ->clone: the destination's
+    backend no longer clones (the source runs the clone; this side stands up
+    the execution context through create), and a service context has none.
+
+=== 75bdf4261 2026-08-13
+vmctx: a lost-write stamp the guest's own high-water mark can be measured against
+
+The instrument the hx2 lost write needed. Every earlier detector compared bytes
+against a mark that could not see the guest's direct MAP_SHARED stores, so it
+read zero and said nothing; this seeds the mark from the one place the kernel
+does see the guest's true value -- the live folio read under the folio lock at a
+take -- and checks two things against it:
+
+  - vmctx_watch_check (at TAKE/TAKEOBJ) now RAISES vmctx_watch_hwm from the folio
+    it hands over, and flags a take that produces a value below it: the object
+    was reverted since the last hand-over.
+  - vmctx_watch_served (called by the backend right after a fault is served,
+    before the guest retries) flags the guest reading back a value below that
+    mark -- the stale read itself, at the instant it happens, which the VMEXIT
+    sampler misses because it is corrected before the next sample.
+
+vmctx_watch_sample additionally splits any stale read by the physical page the
+guest maps (get_user_pages_fast_only vs the object's pfn), without the old
+stable-value gate that a fast writer never satisfies: STALE_SAME (the current
+folio holds an old value) vs STALE_ORPHAN (the guest maps a different folio).
+Measured on hx2, STALE_ORPHAN ~= 0 and STALE_SAME dominant -- so the loss is a
+stale serve installed over the current shared folio, not an orphaned page.
+
+All of it is inert unless vmctx_watch_gva is armed; the exports (vmctx_watch_page,
+vmctx_watch_served) are what the out-of-tree backend calls. Also carries the
+protobj and anon_fault diagnostic counters and the VMCTX_CTL_PROTECTOBJ uapi
+define, which had drifted uncommitted in this tree.
+
+=== b5c1464d6 2026-08-13
+vmctx: a forwarded syscall's write-hold ends on a block, not a timer
+
+A page a forwarded syscall wrote is held against hand-over so the peer cannot
+take it mid-write (the dma1/pg3 lost write). The hold was bounded by a 100ms TTL
+past the last write-fault -- which had to expire, or a syscall that blocks
+forever (futex_wait) would pin the page forever, so the bound was time and not
+the event. That is a latent lost write on both ends of the bound: a page still
+being written can be taken once the timer lapses, and a page long done with is
+held for the rest of the window and ping-pongs.
+
+Make it event-bounded. vmctx_syscall_holds_one() now holds a registered page for
+exactly as long as the call could write it again -- while its thread is running
+the call (task_is_running) or parked in vmctx serving one of the call's OWN
+faults (ev_pending, the wait inside vmctx_report, which is the machine fetching
+the page, not the call giving it up). The instant the thread blocks in the
+guest's own wait -- futex, poll, a read with no data: sleeping, and NOT in a
+vmctx serve -- it cannot be writing the page, so the hold lifts and the peer may
+take it. If the call resumes and writes again it re-faults and re-claims, so
+nothing is lost; what is bought is that a page in active use does not ping-pong
+mid-call, and a blocked call does not pin the peer -- the futex deadlock a bare
+hold once caused, and the whole reason a timer was ever reached for.
+
+vmctx_hold_ttl_ms (100 -> 2000) is now a SAFETY NET, not the release. Reaching it
+means a page was held while RUNNING for 2s without blocking or returning -- a
+stuck or pathologically long in-kernel syscall, a red flag -- so it is logged
+(pr_warn + vmctx_syscall_hold_ttl_fired) rather than silently tolerated, then
+released. vmctx_syscall_hold_blk_release counts the ordinary event releases.
+Measured over a full suite: blk_release=53, ttl_fired=0 (the net never fires),
+syscall_pages_lost=0 of 121206 -- the block-detection lifts every real block
+before the safety TTL, and no written page was taken mid-call.
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+=== 92fc73c96 2026-08-14
+vmctx: give a context the page its object already holds by mapping it, not copying it
+
+Every context of one address space maps the backing object MAP_SHARED at offset
+== the guest address, so for a given address they all map ONE folio. That is what
+memory sharing means here: contexts A and B do not get copies of X, they get the
+one page. A second physical page for one shared address breaks the model.
+
+The monitor had no way to say that. When a page was in the object and a context
+had not faulted it in yet, its only install was to read the object into a buffer
+and poke it back through the context -- a read-then-write-back of the SAME folio.
+It copies a page onto itself, and every store a sibling context lands between the
+read and the write is destroyed by it.
+
+That is hx2's lost write, and its shape says so: "0 one-behind, 0 invented",
+read-backs 1130, 8206 and 9646 rounds stale out of 1.28 billion. A hand-over race
+loses the newest store; this loses thousands, because a whole page is reinstated
+over them.
+
+VMCTX_CTL_MAPOBJ populates the page in the target context through the ordinary
+fault path (get_user_pages_remote, FOLL_WRITE, reference dropped again), so its
+page table ends up pointing at the same folio every sibling maps, with no byte
+read or written. A page the coherence layer has write-protected is not made
+writable by it -- the protect is on the folio's mappings and a write still
+arrives as a protection fault for the owner to decide.
+
+Measured on hx2, which had FAILed every run of this investigation: losses fall
+from 195/158/402 to 3/1/PASS, and the suite goes to 75 passed 0 failed with hx2
+and the browser (ns1) both XPASSing.
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+=== 371573089 2026-08-14
+vmctx: an address-space change belongs to every context of the address space
+
+A guest's threads share one address space. On the source that is one mm, so a
+thread's mmap, munmap or mprotect is the whole program's by construction. Here it
+is not: every context is its own task with its own mm, sharing only the backing
+object, and vmctx_apply_map() runs on the task whose syscall it answered. A
+thread that reshaped the address space therefore left every sibling still mapping
+what no longer exists.
+
+Measured on netsurf: a new thread set up its allocator arena -- mmap 128MB, two
+munmaps to trim it to alignment, one mprotect -- and the MAIN thread died on the
+next page fault its owner could not answer (exit 242, exit reason 0x4e), never
+having been told any of it. The reshaper and the corpse are different pids in the
+same address space.
+
+VMCTX_CTL_APPLYMAP applies one mapping change to a context that did not make the
+call, so the monitor can give it to the other members. The change travels BY
+VALUE: vmctx_apply_map() is split into vmctx_apply_map_rep(), which takes the
+struct, and a thin wrapper for the reply case. The first attempt at this borrowed
+the target's own vc->reply slot on the assumption that the target is stopped in
+the monitor -- true of the caller, false of a sibling, which is running its own
+guest and may have a reply in flight. Stomping that slot is what broke pf1 and
+pf2; passing the change by value is the whole of the fix.
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+=== de92588d1 2026-08-15
+vmctx: say which of these two kernels has the guest-ASID shootdown
+
+The out-of-tree module is built against both 7.0.14 (AMD, the source) and
+6.18.35 (Intel, the destination, held at that version deliberately), and only
+this tree has backend->invalidate and the watch diagnostics. A struct member
+cannot be tested by the preprocessor, and LINUX_VERSION_CODE would answer a
+question about a version rather than about a feature -- wrongly, the day
+6.18.35 gains the hook.
+
+Without these macros the module does not compile against 6.18.35 at all
+("struct vmctx_backend has no member named invalidate"), which is how the
+Intel half of the LAN stopped being buildable and stayed that way unnoticed:
+the AMD box builds from its own copy of this tree and never saw it.
+
+=== 9ed78fe3f 2026-08-15
+vmctx: the invalidations vmctx does not perform itself, and the measurement that says they are not the residual
+
+backend->invalidate is called from the four places this code takes a page away
+on purpose -- take, takeobj, protect, protectobj. That is not the whole set of
+ways a folio stops being where a running guest's ASID-tagged TLB says it is:
+reclaim, migration, compaction, THP collapse and the guest's own munmap and
+mprotect all clear PTEs without going anywhere near vmctx, and no host flush
+reaches an asid-1 entry.
+
+mmu_notifier is the kernel's own mechanism for a secondary TLB that shares the
+CPU's page tables, which is exactly what an NPT-identity guest running on the
+task's own CR3 has, and arch_invalidate_secondary_tlbs() is the op meant for
+it. Registered per context on the guest's mm, lazily from vmctx_guest_step()
+where current IS the context and no VM lock is held -- doing it at creation
+would have to cover the clone path, where the new task is not current and its
+mm is still being built. A service context never reaches that point and never
+registers, which is right: it holds a program's memory and executes none of it.
+
+The callback refuses rather than assumes. The shootdown is a broadcast IPI that
+is WAITED ON, which may not be issued with interrupts off or from an atomic
+section; x86 calls this hook from flush_tlb_mm_range() after put_cpu(), where
+both are fine, but the header documents callers holding a page-table lock. So
+the condition is tested and the refusals are counted: 1793 of 8578.
+
+MEASURED, AND IT IS NOT THE RESIDUAL. ws1 x30 per arm, alternating on ONE boot
+by flipping /sys/module/kernel/parameters/vmctx_mn_enable between runs:
+
+  notifier OFF   26 pass  4 fail
+  notifier ON    28 pass  2 fail
+
+4 against 2 is noise, and the OFF arm reproduces the 40-run baseline of 6/40.
+The instrument is not silent -- 8578 callbacks, 6785 shootdowns issued -- so
+this is a null result, not a null instrument. Both halves of the guest-ASID
+story named in the earlier analysis are now spent: the kick was measured
+neutral in 2026-08-12 and this is the other half.
+
+Off by default for that reason. The code stays because it is correct coverage
+of paths nothing else covers, and because the parameter means the question can
+be asked again of a running kernel instead of a rebuild.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+
+=== d6be1d084 2026-08-16
+vmctx: a file fault on somebody else's address space had no hook at all
+
+do_fault() has had a vmctx case since the RELRO work, and it asks
+current->vmctx. That is the wrong task whenever a monitor reaches into a
+context's memory -- get_user_pages_remote(), which is what PEEK,
+process_vm_readv and ptrace all become. The anon path has had
+vmctx_foreign_anon_fault() for exactly that since it was measured; the file
+path has had nothing.
+
+On a destination that is not a corner case, it is all of guest memory:
+vmctx_back_fault() maps the context's backing object with MAP_SHARED, so every
+guest page is a shared file mapping of that memfd. A foreign read of one that
+the object does not hold does not fail -- shmem_fault() allocates a fresh zero
+folio and inserts it INTO THE OBJECT, permanently, for an address whose
+contents may be on the other machine. Every sibling context maps that same
+offset, so this replaces the address space's memory rather than one task's page
+table, and no install-side detector can see it because nothing writes a byte.
+
+Counted, split by write/read/shared, and -- the number that matters -- by
+whether the fault would have INVENTED: filemap_get_folio() does not allocate,
+so asking whether the object already holds the folio costs a lookup and changes
+nothing. Refusal is behind vmctx_foreign_file_refuse, default off, because a
+foreign WRITE here is how the monitor installs a page in bulk and must succeed.
+
+Measured on ws1, 25 runs: 9034 foreign file faults, 8927 of them on a live
+context's address space, 2199 of those reads -- and WOULD-INVENT = 0. The path
+is real and heavily used and it never invents, so it is not the residual. The
+anon counters over the same runs: 1335 foreign, 630 on a context, 0 reads.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+
+=== 59249f27f 2026-08-16
+vmctx: the fault deadline is a parameter, and the complete fault accounting
+
+Two instruments, and the first one settles a question the second was built to
+ask more carefully.
+
+## The deadline, and what it proved
+
+VMCTX_FAULT_DEADLINE was a #define (2 * HZ), so "is this fault slow or stuck?"
+could only be answered by a rebuild. It is a live parameter now, in
+milliseconds, and **0 means never** -- which is the arm that matters: with the
+deadline off a merely SLOW fault completes and the test passes, while a
+genuinely deadlocked one hangs until the harness limit instead of dying at two
+seconds. vmctx_fault_deadline_hits counts the kills so an arm with no failures
+can be told from an arm where the deadline never fired.
+
+Worth knowing what the loop did with it: the wait is
+wait_event_*_timeout(..., VMCTX_MONITOR_POLL) and  advances by a whole
+poll each time round. Both were 2 * HZ, so the deadline fired on the FIRST
+empty poll -- a fault answered a hair late had no second chance and the
+granularity was the whole deadline.
+
+ws1 x45, three arms rotating on one boot:
+
+  deadline     pass   fail   hang   avg_secs   kills
+  2000ms         13      0      2         15       2
+  20000ms        12      0      3         17       2
+  never          13      1      1         14       0
+
+**Two kills at a twenty-second deadline.** Nothing legitimate takes twenty
+seconds; the wait is unbounded, not slow. The deadline is not the bug, and
+raising it does not make ws1 green -- it converts a kill into a hang.
+
+## The complete fault accounting
+
+The audit that found the missing do_fault() hook was per-path, and a per-path
+audit is how a path gets overlooked. So this counts at the one place every user
+fault passes through -- handle_mm_fault() -- and the hooks that report to a
+monitor count themselves. The difference cannot be wrong by construction:
+
+    faults on a context's memory that nobody was asked about
+        = vmctx_f_seen - vmctx_f_reported
+
+split by who faulted (the context itself or a monitor reaching in) and by
+mapping kind (anon, private file, shared file), because the invariant is NOT
+"every fault is forwarded". The design requires one exception and says so: a
+context faulting on its OWN backing object must not be forwarded, or the module
+backs the page, the hook redirects, the monitor pokes, and it faults again. So
+the statement being tested is:
+
+    every fault on a context's memory is EITHER reported to the monitor OR
+    resolved from the address space's own backing object, and nothing else
+
+and  is the residue that must be zero. Built and
+compiled on both trees; not yet measured.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+
+=== afbc920c3 2026-08-16
+vmctx: do the exit path's write to guest memory while the context is still in the protocol
+
+## Why that write cannot be wrong natively, which is exactly why it breaks here
+
+mm_release() -- do_exit -> exit_mm -> exit_mm_release -- performs
+put_user(0, tsk->clear_child_tid) and a FUTEX_WAKE. That is the
+CLONE_CHILD_CLEARTID contract, the thing that makes pthread_join() return.
+
+Three properties make it safe on an ordinary kernel, and they are worth naming
+because the third is what vmctx breaks:
+
+  1. current->mm is STILL INSTALLED. exit_mm_release() is the first statement of
+     exit_mm(), before task_lock(current); current->mm = NULL; mmput(mm). The
+     page tables are live and CR3 is that address space.
+  2. mm_users > 1 is tested first, so there is another thread that can still
+     observe the word; with no other user there is nobody to tell.
+  3. put_user is an ordinary user access. A page that is not present simply
+     FAULTS IN through handle_mm_fault() on the one true address space, and the
+     store lands; a genuinely bad pointer takes the uaccess fixup and returns
+     -EFAULT, which the caller deliberately ignores.
+
+So the write is GUARANTEED to succeed. Natively that guarantee is harmless --
+there is only one copy of the memory, so "find or make a page" can only find
+the right one.
+
+## Under vmctx the guarantee is the hazard
+
+The address may be owned by the other machine, and by the time mm_release() runs
+this code has already let go: vmctx_task_exit() is called at do_exit()'s top
+(exit.c:915) and exit_mm() is fifty lines below it (:969), so current->vmctx is
+NULL and vmctx_mm_forget() has run. Every guard is keyed on one of those two --
+vmctx_anon_fault on current->vmctx, vmctx_foreign_anon_fault on the mm not being
+current's, the fault accounting on the mm being registered -- so none fires, and
+do_anonymous_page() does what it is guaranteed to do: it MAKES a page. The store
+lands in memory nobody asked for, both machines then hold that address, and they
+disagree -- the source reads 0 while the guest's copy still holds the old tid. A
+joiner reading through the protocol is told nothing has changed. That is the
+"both machines are holding it" the source's own ownership sweep reports.
+
+## The fix
+
+Do it at the top of vmctx_finish(), where current->vmctx is still set and the
+monitor is still attached: put_user's fault is redirected like any other, the
+page is fetched from whichever machine holds it, and the zero lands in the
+guest's real page. Then clear t->clear_child_tid so mm_release() finds nothing
+to do and cannot repeat the write outside the protocol. mm_users > 1 is kept
+from mm_release rather than reasoned about again.
+
+The wake stays, and that is not incidental: suppressing the exit path's write
+WITHOUT doing it here was measured and was worse, because the futex key for
+anonymous memory is (mm, address) and not the physical page -- the exit path's
+wake reached waiters even when its store went to an invented page. This moves
+both halves inside the protocol instead of deleting the half that worked.
+
+Measured, ws1 x40: the in-band write fires 158 times (four per run, one per
+thread) with 2 put_user failures. ws1 is 37 pass / 3 fail, unchanged from the
+previous step -- so this closes a real hole without moving the remaining rate.
+15% at the start of this work, 7.5% now, and the lost-write mode is gone.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+
+=== c8ac33d27 2026-08-16
+vmctx: a context waiting for its monitor must not hold mmap_lock
+
+## The deadlock, photographed
+
+With the fault deadline turned off so the hang holds still, ws1 wedged with:
+
+  ctx A (a service context)  faulted inside a forwarded syscall;
+      handle_mm_fault holds mmap_READ_lock and sleeps in vmctx_report.
+  vmhome                     serving exactly that fault with a POKE:
+      access_process_vm -> __access_remote_vm -> wants mmap_READ_lock.
+  ctx B (main)               in mmap(NULL, 0x801000, ...) for a pthread stack
+      -> queued for mmap_WRITE_lock.
+
+rwsem is fair, so the monitor's NEW reader queues behind the pending writer; the
+writer waits for the reader asleep in vmctx_report; that reader waits for the
+monitor. A three-way cycle on mmap_lock, needing only a thread creation to
+overlap another thread's faulting forwarded syscall -- ws1 exactly, and browsers
+constantly. Nothing is corrupt, which is why every content check in this tree
+reported a clean zero.
+
+## The fix, and the three rules it obeys
+
+Drop the lock and return VM_FAULT_RETRY, exactly as handle_userfault() does for
+the same reason. From its own account of the rules:
+
+ - only with FAULT_FLAG_ALLOW_RETRY; without it the caller cannot cope with a
+   dropped lock, so the old blocking path stays;
+ - with FAULT_FLAG_RETRY_NOWAIT, return VM_FAULT_RETRY *without* dropping and
+   without sleeping;
+ - once dropped, the answer MUST be VM_FAULT_RETRY -- returning VM_FAULT_SIGBUS
+   there would have the caller unlock a lock this function already released.
+
+No lost wakeup: the event is not published until vmctx_report(), which runs
+after the drop, so nothing can answer in the window; and the wait is a
+wait_event on reply_wq, which re-tests reply_pending after
+prepare_to_wait_event(). Nothing of vmf survives the drop -- the address and the
+write bit are copied out first, because another thread may munmap the range and
+free the VMA; a range genuinely unmapped by then makes the retry fault on
+nothing and the program earns its SIGSEGV, which is correct and is what
+userfaultfd gives. Forward progress is bounded: the retry arrives with
+FAULT_FLAG_TRIED and takes the blocking path, so this loops at most once.
+in_mm_fault is cleared on this path because the lock really is no longer held.
+
+## Measured, ws1 x40 per arm, alternating on one boot
+
+  arm                                pass  fail  hang   retries
+  retry OFF (lock held across wait)    34     4     2         0
+  retry ON  (lock dropped)             36     0     4      1372
+
+The failures that came with a 131 kill -- the deadline firing on a fault whose
+monitor was queued behind mmap_lock -- go 4 to 0. That is the deadlock breaking,
+and 1372 retries in 40 runs is the mechanism doing it rather than a no-op.
+
+The hangs are NOT this bug and are untouched: all four are the same
+futex 0x4d1800 (__exit_lock) with expect==actual and no context dying. They
+count higher here because runs that used to die early now survive to reach the
+exit path where that one lives. Total failures 6 -> 4.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+
+=== cee39e2df 2026-08-16
+vmctx: the mm table is a set, so one thread's exit unhooked the whole address space
+
+vmctx_mm_note() deduplicated by mm and vmctx_mm_forget() -- called once per
+exiting CONTEXT from vmctx_task_exit() -- cleared the slot. Four threads of one
+program therefore occupied one slot, and the FIRST of them to exit took the
+address space out of the table while the others were still running in it.
+
+Every hook in vmctx.c asks that table first, so from that instant, for the rest
+of the run: do_anonymous_page() invented pages for addresses the other machine
+owns, do_wp_page() was not even counted, vmctx_install_single() went false so
+2 MiB THP and large-folio batch installs came back and populated hundreds of
+neighbour pages nobody faulted on -- and vmctx_fault_seen() stopped counting,
+which is why every 'is every fault reported' measurement so far has looked
+clean. The instrument went blind at the same instant as the hooks.
+
+Refcounted instead, incremented and decremented on exactly the events that
+already maintain vmctx_nr_active (vc->active going 0->1 and 1->0), which is
+what makes the pairing exact rather than hopeful. The count is kept against
+vc->noted_mm rather than t->mm because execve replaces the address space under
+a live context: the old slot was leaked and the new mm was in no slot at all.
+
+vmctx_mm_early_drop counts the event in both arms -- it is a fact about the
+program, not about the fix -- and vmctx_mm_overflow makes the other silent
+unhooking (all 64 slots busy) audible for the first time.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+
+=== 4b1796318 2026-08-16
+vmctx: takeobj leaked a block per hand-over, and the kernel said so at teardown
+
+shmem_recalc_inode() does not take 'how many pages went away'. It DERIVES that:
+
+    freed = alloced - swapped - i_mapping->nrpages
+
+and only then unaccounts the blocks. Every call site in mm/shmem.c passes 0 for
+alloced after removing a folio -- shmem_undo_range() ends with
+shmem_recalc_inode(inode, 0, -nr_swaps_freed) -- because filemap_remove_folio()
+has already dropped nrpages.
+
+vmctx_ctl_takeobj passed -1, which subtracts the page a second time: alloced
+falls by one AND nrpages falls by one, so freed computes 0,
+shmem_inode_unacct_blocks() is never reached, and inode->i_blocks keeps the
+block for ever. One leaked block per punched hand-over, reported when the
+backing memfd is finally evicted:
+
+    WARNING: mm/shmem.c:1430 at shmem_evict_inode+0xf8/0x2b0, vmremote-local
+
+which is WARN_ON(inode->i_blocks). It also hardcoded one page for a folio that
+may be larger; deriving the count cannot get that wrong either.
+
+Also: the fault deadline now dumps the MONITOR's stack beside the waiter's and
+says whether it had taken the event at all -- 'never picked it up' and 'picked
+it up and got stuck' are different bugs and the message could not tell them
+apart.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+
+=== e224cb0db 2026-08-16
+vmctx: foreign-read refusal measured false twice; default off, narrowing and counters kept
+
+=== 5cdfba3f8 2026-08-16
+vmctx: the in-band clear-tid write must TAKE the page, not just store into this copy
+
+put_user() is an ordinary user access, so it only goes through the coherence
+protocol if it FAULTS -- and it only faults if the page is absent here. When
+this side already has the page mapped, the store lands in THIS copy while the
+other machine keeps its own, and the two disagree about that word for ever.
+Nothing is lost and nothing is invented: the address simply has two values.
+
+That is the whole of ws1's remaining hang, and it is a spin rather than a lost
+wakeup. A thread exits, this clears its tid word here, the destination's copy
+still holds the old tid, and main -- in pthread_join, reading ITS copy -- asks
+for a FUTEX_WAIT on a value this side has already zeroed. The wait returns
+EAGAIN at once, main re-reads its unchanged copy, and asks again:
+
+    [vmremote] futex WAIT_BITSET addr=0x7ffff77f5ce8 arg=1 word-here=1
+    [vmhome  ] futex WAIT_BITSET addr=0x7ffff77f5ce8 arg=1 word-HERE=0
+
+with word-HERE=0 on 134300 samples out of 134300.
+
+So unmap the page here first and let the store fault. The fault is redirected
+like any other -- the monitor is still attached and REDIRECT_FAULT is still set,
+which is the whole reason this write was moved in-band -- and the monitor pulls
+the page from whichever machine holds it, TAKING it from that machine. The
+destination's next read of the word then faults and fetches what was written
+here. One writer, which is the rule everywhere else in this design.
+
+The defect is general, not a property of clear-tid or of futex: any write this
+kernel makes to guest memory outside a fault skips the protocol. clear-tid is
+where it shows, because a futex is the one operation that compares the two
+copies rather than letting the program do it.
+
+The mmap lock is dropped before put_user: the store faults on purpose and the
+fault path takes that lock itself. vmctx_cleartid_zapped and _nolock count both
+outcomes so a skipped zap cannot be mistaken for a fix.
+
+Cross-box suite at this point: 81 passed, 0 failed.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+
+=== cbce0b8e1 2026-08-18
+vmctx: break a copy-on-write share at the take, in the caller's thread
+
+A take of a page two service contexts still share is refused -EBUSY by
+vmctx_folio_precheck (mapcount 2 against the 1 the unmap removes), and -EBUSY
+means "wait and ask again". Waiting works only if something will change, and for
+a copy-on-write share nothing will: the sharing is a property of two page
+tables, not a transient.
+
+The monitor's old answer was to ask the CONTEXT to break it, with
+MADV_POPULATE_WRITE through VMCTX_CTL_SYSCALL. That is a deadlock, measured
+rather than reasoned: CTL_SYSCALL needs the context at the return-to-user path,
+and a sampler on the stalled breaks caught the context every time in
+
+    vmctx_report <- vmctx_redirect_fault <- vmctx_anon_fault
+                 <- do_anonymous_page <- __handle_mm_fault
+
+-- parked in a fault of its own, waiting for a page only the machine blocked on
+this take can send. The two-second fault deadline broke the tie every time: 95
+stalls of 2011-2064ms and 10 timed-out runs in 1024.
+
+So vmctx_break_cow_share() does it here, in the caller's thread, where nothing
+needs the context to run: FOLL_WRITE on a page just proven present, resolved by
+do_wp_page, judged by the mapcount actually dropping. It fires only at the
+precheck's own refusal and only when folio_mapcount > 1 -- and that gate is
+load-bearing, not defensive. A general-purpose version of the same break
+(VMCTX_CTL_BREAKCOW, called by the monitor on every first refusal) measured
+195/256 with 32 thread deaths and 29 wrong-answer runs against 248/256 with the
+body switched off: on a page that is merely write-protected -- mapcount 1,
+protected precisely so a write faults and the monitor can arbitrate --
+do_wp_page reuses the folio and flips the PTE writable behind the arbitration,
+and the guest's writes to that page are lost. The mapcount>1 case is the one
+do_wp_page cannot reuse: it must copy, under the page-table lock, so there is no
+window to lose a store in. The ctl op stays (unused) so the op numbers hold;
+its counter proves disuse.
+
+Measured, ws1 x1024 pooled, 8 at a time: 1006 pass, tmo 0 (was 10-17), deadline
+kills 0, lost 0, heap 0; the kernel break fired 134 times. Suite 84/0. links2 -g
+renders (+253 colours, 0 faults) -- the forked-pair share that motivated the
+monitor-asked break is fully served by this one.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+
+=== 3758bca07 2026-08-18
+vmctx: name the assisted call that is sitting on the slot, and re-nudge it
+
+A hung ws1 run, photographed live, showed the whole chain: the guest's main
+parked in vmctx_report waiting for a forwarded writev; vmhome parked in
+VMCTX_CTL_SYSCALL waiting for the service context to perform it; and the
+service context parked in futex_do_wait under vmctx_dispatch_syscall --
+executing an EARLIER assisted call, a forwarded futex wait whose requester
+timed out and walked away. An assisted call that blocks indefinitely starves
+every later one on that context.
+
+So, two changes, both instruments before they are repairs:
+
+ - vc->assist_nr/assist_arg0 record what the context is EXECUTING, and the
+   timeout print names it -- with the futex word's current value read out,
+   because for a futex that value is the whole question -- and dumps the
+   occupant's stack. The line that used to name only the call that lost the
+   slot now names the call that is sitting on it.
+
+ - the 30s wait is 30 one-second slices, re-nudging (wake_up + wake_up_process)
+   each slice, counted in vmctx_sys_renudge. One nudge measurably does not
+   suffice.
+
+What they measured, ws1 x2048: the re-nudge fired 1078 times and the hang rate
+did not move (16, was 7/1024) -- and the timeout line now reads "did not
+perform 202; the slot is occupied by 202(0x7ffff6ff4ce8), and the futex word
+there reads 0x00000001". Same address every run. The queued call is a RETRY of
+the occupant; the word still holds the value the sleeper went to sleep on; and
+a sleeper that survives thirty direct wakes is waking, re-reading a STALE
+source-side copy of a word the destination has since rewritten, and re-queueing
+-- each wake consumed and discarded. The hang is not a lost nudge; it is the
+two-holder defect eating futex wakes.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+
+=== c8c518675 2026-08-18
+vmctx: the assisted-slot contract, and a futex wake that needs no context
+
+Three changes, one rule: work is never handed to a context whose execution has
+not been stopped or proven idle, and state keyed to an address space is
+operated on through the mm, never through a context.
+
+- VMCTX_CTL_SYSCALL refuses instantly (-ESRCH) for a dying context and
+  (-EBUSY) while a previous assisted call is still executing; the old path
+  accepted both and wedged 30 seconds, and the second case let a stale
+  completion answer a fresh request.
+- The 30s deadline on assisted calls is gone: a blocking syscall blocking is
+  not a failure, and the deadline did not end the sleep -- it abandoned it and
+  fabricated -EIO. Killable, diagnostic at 30s, no fabrication.
+- futex_wake_mm() + VMCTX_CTL_FUTEXWAKE: wake every waiter on (mm, addr) from
+  the caller's thread, both key forms. The waiter queue is the half of a futex
+  the page protocol cannot move; the assisted form deadlocked by construction
+  (the only live slot is occupied by the WAIT being woken).
+
+Measured, ws1 x2048: hang 16 -> 11-15 (within noise), tmo 0, heap 0; the hang
+has MOVED -- the runs that still hang now show no forwarded futex at all: the
+last worker finishes, OP_finish lands, and main never issues another syscall,
+i.e. it is parked in its join-word FAULT, one layer below the futex. The next
+hunt belongs there.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+
+=== a01c23580 2026-08-18
+vmctx: the destination has no concept of wait or wake-up
+
+The exit-time clear-tid write and futex wake now run ONLY in a SERVICE
+context -- the source's, whose kernel is where every forwarded WAIT sleeps and
+whose futex table is the only one that means anything. A destination-role
+guest context does neither (and its robust list is not walked): its death
+travels to the owner, and the owner performs the clear (taking the page,
+single writer) and the wake (on the mm, where the waiters are).
+
+Measured: vmctx_cleartid_suppressed reads 0 over 2048 pooled runs -- the
+destination never carries the ctid pointer at all, because the real clone runs
+on the source, so this guard is an invariant made explicit rather than a
+behaviour change (2007/2048, unchanged within noise). The remaining hang class
+is not futex-table placement: the runs that still hang forward NO futex at
+all -- the joiner is parked one layer down, in the fault service for the
+join word's page during the dying thread's teardown window.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+
+=== e02c32244 2026-08-18
+vmctx: MAPOBJ maps what the object holds, and never invents what it lacks
+
+VMCTX_CTL_MAPOBJ answered "map this page" by running the ordinary fault --
+get_user_pages_remote() without FOLL_NOFAULT -- and shmem_fault() on a
+punched hole does not fail: it allocates a fresh zero folio into the object,
+permanently, for an offset whose bytes live on the other machine at that
+instant (the hand-over's punch has already run). Every sibling context maps
+the same object, so the invention replaced the ADDRESS SPACE's memory: no
+byte written by userspace, every install-side detector silent, and the guest
+later reads a pointer as zero. ARCHITECTURE #9.2g caught it with the
+divergence check ("DIVERGE ... ctx=0 ctx=0 ctx=0 object=0 mark=6800357")
+and closed the window for one caller with ctl_lock; the write-grant caller
+(page_make_writable) measured WORSE under that lock and stayed open.
+
+The rewrite makes the call answer instead of allocate:
+
+ - filemap_lock_folio() finds the folio the object ALREADY HOLDS; a hole is
+   answered as 0 bytes (vmctx_mapobj_holes counts them), never faulted in.
+   Nothing in the call can allocate into the object, so the unlocked caller
+   is safe without ctl_lock -- and so are the userspace paths that now ask
+   the object unconditionally before writing an empty page.
+ - The folio lock is held across the PTE install, and TAKEOBJ holds the same
+   lock across its unmap-copy-punch -- a map lands wholly before the
+   hand-over (and is removed with the rest) or wholly after (and sees the
+   hole). The TOCTOU every caller had to close from outside is gone.
+ - PTE present on the object's own folio: re-grant write via
+   ptep_set_access_flags -- the page_make_writable() half of the job.
+ - PTE present on another page, or swap/PROT_NONE: -EBUSY, not ours.
+ - pte_none: install exactly as set_pte_range() does for a file fault --
+   rmap first, then the PTE; the lookup's reference becomes the mapping's.
+
+Measured on ws1 (kernel #125, torture 2x1024 + repeat 1536 twice): rate-
+neutral, and vmctx_mapobj_holes = 0 across 2.4M calls -- this door was not
+the residual's producer -- with suite.sh 84 passed, 0 failed, three rounds.
+Kept because the invention it removes is real (hx2's zero-folio divergence
+reproduced it), and because refusing holes is what makes the userspace
+object-recheck guards safe to run on every empty-page path.
+
+=== f6eddcc55 2026-08-18
+vmctx: the guest register file owns its FS/GS bases
+
+The backend's entry refresh read the LIVE MSR_FS_BASE -- whatever base the
+CPU happened to carry at that instant -- and a monitor's SETREGS writes
+thread.fsbase without reaching the register of a task already on a CPU
+(x86_fsbase_write_task cannot poke another CPU). A freshly spawned context
+that stayed on-CPU from its clone() through its RESUME therefore entered
+the guest with the MONITOR's own thread pointer, while thread.fsbase read
+back correct the whole time -- invisible to any read-back the monitor could
+make. Measured on ws1 under a pool: ~2% of runs, a new thread dying in
+__ctype_init at rip 0x437716 on a null loaded through vmremote's own TCB
+(fs_base 0x...580, inside the monitor's -Ttext-segment=0x20000000 image)
+with the correct pd sitting in r8. Every downstream face of the "residual
+lost store" -- pd+0x8/pd+0x901 null dereferences, __nptl_deallocate_stack's
+unlink through zero, the exit-98 cascade, the REPEATED start_thread tail --
+was this one wrong register at birth. Four sessions of memory-coherence
+repairs measured rate-neutral because no page was ever wrong.
+
+The guest register file now owns its bases, in vmctx_task:
+
+ - SETREGS stores fs/gs into vc->guest_fsbase/guest_gsbase (fsgs_valid);
+   thread.fsbase is still written -- a SERVICE context has no backend and
+   lives by it -- and zero still means "leave it alone".
+ - The SVM and VMX entry paths load the VMCB/VMCS from the vmctx-owned
+   copy, which no context switch and no CPU residency can clobber. The
+   live-MSR fallback remains only for a context nothing has SETREGS'd:
+   the first context before the program's own arch_prctl, whose base is
+   the loader's don't-care.
+ - Every exit saves the guest's base back (the guest may move its own),
+   so GETREGS answers with what the guest really has and the next entry
+   restores exactly that.
+
+Measured on ws1, kernel #126 + the settled-SETREGS userspace, against the
+#125 control on the same discipline: torture 1024x8 fails 52/2048 -> 17,
+with every remaining death frame carrying a CORRECT fs_base; ws1-repeat
+1536: 2 REPEATED start_thread tails -> 0; suite 84 passed, 0 failed.
+
+=== 309a3a7e5 2026-08-19
+vmctx: a take's COW break is judged by the new mapping, not the old folio's mapcount
+
+vmctx_break_cow_share() write-faulted the page to break a copy-on-write
+share, then decided whether it had worked by re-reading the ORIGINAL
+folio's mapcount -- and for a writable-private FILE page that is the wrong
+folio. The write fault replaces the shared page-cache folio with a fresh
+private copy in THIS mm; the break has succeeded for the one mapping the
+take is about, while the old page-cache folio keeps its high mapcount from
+every other process on the machine that maps the same file. Judging by that
+mapcount declared the break failed forever: netsurf's serve hit a font page
+"mapped 30 time(s)", the break made the private copy on the first try and
+was disbelieved on every retry, the pull spun its whole budget, and the
+guest's fault died on the 2s deadline (exit 131).
+
+Judged by what the mm maps NOW: if get_user_pages_remote came back with a
+different folio than the take is about, the private copy exists and the
+break is done. Only when it is still the same folio does the mapcount test
+apply (a private page write-faulted in place is not progress). Measured on
+kernel #127: suite 84/0 (all six known gaps XPASS), ws1 torture 1018/1024
+hang 0, and the take now breaks 16-19 shares per netsurf run that the old
+judgment refused.
+
+=== 1b6364b2c 2026-08-19
+vmctx: an address below a grow-down stack is grown, not denied
+
+The owner's answer to "is this address the program's" comes from its
+service mm, and for an address just below the stack that mm says no --
+while the program's own kernel, handed the same access natively, would
+EXPAND the stack and serve it. The service context only grows its stack
+when a forwarded syscall happens to touch that depth, so a guest probing
+one page below what any forwarded call has yet reached was ruled "no
+such address" and died of a SIGSEGV it never earned. Measured on
+netsurf: killed at 0x7fffffdaf000 (err 0x4, -14 from the owner) with
+live frames at 0x7fffffdb0030 -- one page above.
+
+VMCTX_CTL_GROW asks the kernel to apply exactly do_user_addr_fault's
+policy: expand_stack() -- grow-down VMAs only, guard gap, rlimit -- and
+nothing else. No page is installed, so the owner's copy stays absent and
+the ordinary ABSENT protocol serves the page where the program runs. An
+address already covered by a VMA answers -EEXIST untouched (a PROT_NONE
+guard page's whole purpose is to fault -- pf1/pf2); a hole no grow-down
+VMA can reach answers -ENOENT and the caller's EFAULT stands.
+vmctx_stack_grown counts the expansions.
+
+=== 7be2a3853 2026-08-19
+vmctx: exec wipes the destination's copy of the address space, and the unmap that needs
+
+Two halves. VMCTX_CTL_APPLYMAP's UNMAP arm used vm_munmap() -- current's
+mm -- so the one caller that needs it cross-task (the monitor, whose
+current is vmremote) would have unmapped the monitor. It acts on the
+target's mm now, under its own mmap_write_lock, which is safe at the one
+moment the monitor calls it: the context is stopped in the monitor.
+
+And vmctx_stack_grown counts VMCTX_CTL_GROW (from the previous commit).
+
+=== a25c0a72f 2026-08-19
+vmctx: no address is special; the kernel's own fault entry decides what is reachable
+
+VMCTX_CTL_GROW is gone, one kernel after it arrived. It answered a real
+defect -- the owner ruled SIGSEGV on addresses its own kernel would have
+served -- but it answered it by naming a kind of address, and the project
+rule is that there are no kinds: a page is a page, and the only authority
+on whether an address is reachable is the fault entry path of the kernel
+that owns the mm.
+
+VMCTX_CTL_TRYFAULT is that authority, asked directly: the fault path's
+own VMA lookup (expand_stack IS that lookup's rule for a hole -- vmctx
+adds no policy of its own), then the mapping's own access flags. It
+commits no page: the page half of a fault belongs to the protocol, which
+places pages on the machine that runs the program. 0 means the address
+is real and the ordinary ABSENT path serves it -- every address alike;
+-EACCES and -EFAULT are SEGV_ACCERR and SEGV_MAPERR in the kernel's own
+words, and the owner may declare a fault only from those answers, never
+from a reading of /proc/maps text.
+
+=== 40bb4c61b 2026-08-19
+vmctx: the monitor is asked only about the address space it has adopted
+
+An execve is two address spaces wearing one task, and the fault hooks
+could not tell them apart. The result was measured twice, once in each
+direction:
+
+- After exec_mmap(), the ELF loader's writes into the HALF-BUILT image
+  (padzero() clearing an interpreter data page's tail was photographed)
+  faulted with vm_mm == current->mm and were redirected: the monitor
+  answered from the PREVIOUS generation's record, and the old
+  _rtld_global page was transplanted into the fresh image. Every
+  fork+exec'd child of firefox's wrapper booted ld.so on a pre-exec
+  namespace list and spun for ever in a self-loop it then built.
+- Gating redirection on in_execve alone (the first attempt) broke the
+  other direction: execve's argv-copy legitimately faults on the OLD,
+  adopted mm -- the guest wrote the command line on the other machine --
+  and answering those locally returned -EFAULT for the exec itself,
+  eight times per firefox run.
+
+So the rule is the protocol's own, with no exec case in it: redirection
+is allowed only when the faulting mm is the one the monitor ADOPTED
+(vc->noted_mm). vmctx_exec_notify() moves to the exec's COMPLETION,
+which is the moment the new image becomes the adopted address space --
+argv reads redirect (old mm, adopted), loader writes are this kernel's
+own to fill (new mm, not yet adopted), and the exec'd program's faults
+redirect again (adopted at completion). AF_UNADOPTED counts the local
+fills.
+
+=== 772782cbf 2026-08-20
+vmctx: a syscall's pages are held while it can touch them -- until it returns or blocks -- never for a fixed term
+
+The hold that keeps a forwarded syscall's pages from changing machines
+mid-call had two defects, and pg3's photographed one-behind is the pair
+of them acting together:
+
+- COVERAGE. The registry recorded write fault-ins only, so a page that
+  was already PRESENT when the call started -- touched with no
+  kernel-visible event at all -- was never held. The failing round's
+  own log says exactly this: "SYSCALL 1: watched page present here
+  pre=1 post=0", a write(2) whose buffer page was pulled away
+  mid-copy; the re-pull came back one round stale and the guest read
+  its previous message. The read-only exemption was argued as
+  load-bearing from kernel #43's futex starvation, but that failure
+  was the LIFETIME's (a fixed TTL holding through a block), not the
+  coverage's.
+
+- LIFETIME. Entries expired on a timer. A timer is wrong in both
+  directions at once: too short and an actively-running call has its
+  page stolen mid-copy (the defect above); too long and a call that
+  has BLOCKED -- futex_wait asleep, a pipe read with no data -- pins a
+  page its own waker needs, which is the #43 deadlock.
+
+The correct lifetime is the call's own shape. A page a call has
+touched, or could touch, is held exactly while the call could touch it
+again: while its thread is running the call, or parked in vmctx
+waiting for one of the call's own faults to be served (ev_pending).
+The instant the call blocks in the syscall's own semantics it cannot
+be touching anything, so every hold lifts; when it wakes and touches
+again, the touch faults (absent now) or is re-covered by presence.
+Returning to the execution context clears everything, as before.
+
+So:
+
+- vmctx_af_sys_hold() records READ fault-ins as well as writes, on one
+  clock (it stamped ktime_get_ns() into a field the safety net
+  compares in jiffies, so the net could never fire for its entries),
+  with a per-entry write bit so the end-of-call lost-write audit still
+  reports only stores that actually went missing. The open-coded
+  duplicate of it in the blocking fault path is replaced by a call.
+
+- vmctx_syscall_holds_one() gains the presence rule: a page NOT in the
+  registry but present in the adopted mm is held under the same
+  running-or-serving lifetime, because a running call can be touching
+  any present page event-lessly. The walk is done once per ask, under
+  mmap_read_trylock (free_pgtables runs under the write lock; a busy
+  lock is answered "held", counted in vmctx_syscall_hold_mmbusy).
+  vmctx_syscall_hold_present counts holds the new rule granted. The
+  in_monitor_syscall re-check under the lock now BAILS when the call
+  has ended, where it used to fall through and would have let the
+  presence rule hold a completed call's pages while the guest ran.
+
+- vmctx_syscall_holds() takes get_task_mm() once for the walk --
+  mm_users is what keeps exit_mmap() from freeing the tables under a
+  cross-task page-table walk.
+
+- The take and protect paths ask the hold question ONCE MORE on the
+  brink -- ctl_take just before the zap, ctl_takeobj and ctl_protectobj
+  after the folio-lock wait, before the unmap/wrprotect -- because the
+  entry check samples the call state before waits that can sit behind
+  a whole concurrent hand-over, and past the zap a refusal costs the
+  page. Refusing at the brink destroys nothing; the caller retries.
+
+- The TTL survives only as a loud safety net, and it bounds the call's
+  own CPU TIME (se.sum_exec_runtime since dispatch), never wall age:
+  the first #133 suite fired a wall-age form on a clock_nanosleep that
+  had slept its full 2s and woken -- not a stuck runner -- and the
+  release landed at the exact wake moment holds exist for. 2s of
+  ACCUMULATED RUNNING without returning is a defect to investigate,
+  not a policy.
+
+- Dispatch seeds the registry with every argument that looks like a
+  user address, one page each -- syscall-AGNOSTIC (no per-syscall
+  argument tables), write bit off so the lost-write audit stays a
+  statement about stores the call demonstrably made. The registry is
+  what a call keeps across its own fault-waits; an arg-named buffer,
+  present at entry and touched with no fault, is what a briefly
+  narrowed ev_pending arm lost 3 of 48 pg3 runs through. The full
+  lifetime stands: running or serving-a-fault holds, blocked releases;
+  a 200ms serve-side yield was measured against the 1s wait and
+  refuted (pg3 96/96 -> 42/48, and the browser stall count it aimed at
+  went UP), so the peer waits out a held call rather than churning
+  yield-refault cycles against it.
+
+The deadlock audit for the presence rule: a running call holds every
+present page of its mm, and waits on nothing but its own faults; its
+fault service needs only dest-side actions, which take dest-side pages
+under dest-side rules. A call that waits on a sibling's progress
+(futex_wait on a word the sibling must write) does so BLOCKED, and a
+blocked call holds nothing -- the block-release is the cycle breaker,
+and it is exactly why the lifetime had to be the call's shape before
+the coverage could be widened.
+
+=== a00c73c22 2026-08-20
+vmctx: vacated ranges are the kernel's to report -- the mm-mutation hook feeds a per-mm change log
+
+Propagation of destruction used to be keyed on decoding syscall numbers
+in the monitor: a switch that named munmap and (belatedly) mremap, and
+that structurally cannot enumerate every way an mm loses memory.
+mremap's absence for the project's whole life was measured as netsurf's
+byte-deterministic exit-242 wall; brk-shrink and MAP_FIXED's implicit
+unmap were never in the list at all. The owner's ruling that forces
+this shape: propagation follows the mm being touched, never a list of
+syscall numbers.
+
+So the kernel reports it, from the one place that cannot miss:
+
+ - Each vmctx_mm_slot -- the per-mm table every hook in this file
+   already consults -- carries a ring of vacated {start,end} ranges,
+   a dropped count for overflow (reported and reset at the drain, so a
+   lost range is loud), and a consecutive-duplicate suppressor.
+
+ - The mmu notifier gains invalidate_range_start, filtered to
+   MMU_NOTIFY_UNMAP: the event unmap_region, move_vma and
+   mmap-over-live raise when a mapping ceases to exist. NOT
+   MMU_NOTIFY_CLEAR -- CLEAR fires for madvise, migration, and the
+   coherence layer's own COW write-protects, where the mapping lives
+   on and "forget this range" would be wrong. The callback never
+   blocks and always answers 0, so it is legal in both notifier
+   contexts. The notifier fires once per subscription and a threaded
+   program has one subscription per context, so one munmap arrives N
+   times back-to-back with the identical range; the suppressor
+   collapses exactly that, and the drain resets it so a genuine
+   unmap-map-unmap of one range within later windows survives.
+
+ - Registration is UNCONDITIONAL now, and covers service contexts:
+   the attach moved to the top of vmctx_guest_step(), because a
+   service context -- which parks before the guest run and so never
+   reached the old attach -- is precisely the task whose mm the
+   forwarded syscalls mutate, the mm whose vacated ranges the monitor
+   needs. The TLB-kick op stays self-gated on vmctx_mn_enable
+   (default 0; the standing tlb_ctl=1 flush is load-bearing), so
+   registering always arms only the log. An attach that finds the mm
+   changed re-registers: execve replaces the address space under a
+   live context, and a subscription pinned to the old mm would log
+   the dead address space and miss the live one.
+
+ - VMCTX_CTL_MMLOG (21) drains the target mm's ring into a struct
+   vmctx_mmlog: up to max entries, n answered (n == max means ask
+   again), dropped reported and reset. The monitor calls it after
+   every forwarded syscall and ships the ranges to the machine
+   running the program inside the syscall reply, where they get the
+   full munmap treatment whatever call vacated them.
+
+The registration is TWO subscriptions, and the kernel forces that:
+__mmu_notifier_register() refuses (WARN + -EINVAL) one subscription
+whose ops carry both arch_invalidate_secondary_tlbs and
+invalidate_range_start. A first cut used one combined ops table and
+every registration failed silently -- attach returns void, and the
+whole suite ran with vmctx_mn_calls a confident zero and pf1's
+unmapped-page case reading the ghost mapping (pf1/pf2/fm1, 9 FAILs in
+3 rounds). So the log subscription registers always, the kick
+subscription registers only while vmctx_mn_enable is set (checked at
+every step, so flipping the switch arms already-running contexts),
+and a registration failure now warns instead of vanishing.
+
+The monitor-side syscall decode this replaces (reply_note_map's munmap
+case and mremap's destructive half) is deleted in the same change on
+the userspace side; what remains of mremap handling there is the one
+thing only the call can express, the old-to-new relocation pairing.
+
+=== b34ea6de3 2026-08-20
+vmctx: MADV_DONTNEED is a discard, and the change log now says so -- soft entries drop pages, not mappings
+
+The mm change log (the previous patch) covers every way a MAPPING dies,
+because MMU_NOTIFY_UNMAP fires wherever one does. MADV_DONTNEED is the
+mutation that arm structurally cannot see: it raises MMU_NOTIFY_CLEAR,
+and CLEAR cannot be logged wholesale -- it also fires for page
+migration and for the coherence layer's own COW write-protects, where
+the mapping and its content both live on and "forget this range" would
+be wrong.
+
+But DONTNEED is a contract with content: the next read of a private
+anonymous range observes fresh zero-fill, and glibc's allocator leans
+on exactly that when it trims arenas -- memory handed back by DONTNEED
+is treated as zeroed when next carved up. A machine still serving the
+old bytes is not slow, it is wrong, and the wrongness surfaces as heap
+corruption far from the madvise. Measured (tests/md1): under a guest,
+a DONTNEEDed arena read back its 0xaa fill from the destination's
+untouched copies.
+
+So the discard gets its own note, from the one call site that MEANS
+discard: mm/madvise.c's MADV_DONTNEED dispatch (DONTNEED_LOCKED
+included, MADV_FREE excluded -- FREE's lazy semantics permit the old
+bytes until the next store, so propagating it would be optional
+correctness). The report still comes from where the memory is
+released, never from decoding a syscall number in userspace; a
+quick-out on vmctx_mm_live keeps the slot scan off boxes with no
+context running.
+
+A discard is a SOFT entry -- bit 0 of the stored start, which page
+alignment leaves free -- because the consumer must do a different
+thing: ownership resets and every content copy dies, exactly as for an
+unmap, but the mapping and its records live on. The monitor forgets
+page ownership only (a RELRO seal and a shared-file range describe the
+mapping, which is untouched) and ships the flag through the reply; the
+destination punches its object and retained copies and applies the new
+VMCTX_MAP_ZAP to every member of the address space: drop the PAGES of
+the range and keep the VMAs, implemented as do_madvise(MADV_DONTNEED)
+on the member's own mm -- the operation IS a dontneed, with its own
+locking and cross-mm form, so it is used rather than reimplemented.
+The next touch faults through the ordinary service and fetches the
+fresh content from the machine that owns the program: zero-fill for
+private anonymous, the file's bytes for a file mapping, which is why
+the destination never manufactures zeros itself (a DECLINE that
+invents zeros is the recorded evil).
+
+The consecutive-duplicate suppressor compares flag and range together,
+so a hard and a soft event on one range never collapse into each
+other.
+
+=== f1b8c2a9c 2026-08-20
+vmctx: the discard zap walks its own VMAs, and a map_count desync is said out loud
+
+Two lessons from the destination box's first cross-box round on the
+change-log userspace, both applied here as well because this tree is
+where they were probably firing SILENTLY.
+
+The zap: VMCTX_MAP_ZAP went through do_madvise(), and the remote-mm
+DONTNEED path through do_madvise is one nothing in-tree takes --
+io_uring advises its own mm, process_madvise forbids DONTNEED -- so
+nobody had ever hit get_untagged_addr() calling untagged_addr_remote()
+before madvise's own per-VMA locking took anything: its
+held-mmap-lock assertion fired per ZAP, a WARN storm on the
+destination and (with the identical code here) the likely source of
+this box's silent W taint. What DONTNEED does to pages IS
+zap_page_range_single() per VMA under mmap_read_lock, so the case now
+does exactly that, skipping the VMA kinds madvise itself refuses
+(pfn/IO, locked, hugetlb).
+
+The desync: the destination kernel died at exit_mmap's hard
+BUG_ON(count != mm->map_count) on virtually every guest-context exit
+-- a real accounting desync, producer unknown, and THIS tree checks
+the same fact with VM_WARN_ON_ONCE under CONFIG_DEBUG_VM, which is
+not set: the identical desync here would be invisible. tear_down_vmas
+now prints walked/map_count/delta unconditionally on mismatch. The
+print is the desync's measurement, not its acceptance; the delta per
+exit is the next photograph of an open defect.
+
+=== 2067d0f55 2026-08-20
+vmctx: a cross-task munmap must account to the target mm, not current->mm
+
+The map_count desync the previous commit's exit_mmap print exposed is
+here. vms_complete_munmap_vmas() -- the tail of every munmap -- takes
+mm = current->mm and decrements its map_count / locked_vm / total_vm /
+exec_vm / stack_vm / data_vm by the vmas removed. For an ordinary
+munmap current->mm IS the target and that is right; for vmctx it is
+not. VMCTX_CTL_APPLYMAP unmaps a range out of ANOTHER task's address
+space -- the monitor tearing a guest context's stale mapping after a
+forwarded munmap (range_vacated) or an exec (exec_wipe) -- and there
+current is the monitor. So the vmas left the guest's maple tree while
+the monitor's counters were decremented: a zero-sum accounting desync
+between the two mms, +1 on the guest at its exit_mmap, -1 on the
+monitor at its.
+
+Convicted by a controlled experiment rather than reasoned about:
+mu1/mu2/fi1 (a real forwarded munmap -> cross-task VMCTX_MAP_UNMAP ->
+do_munmap) desynced; th9's MADV_DONTNEED (VMCTX_MAP_ZAP, which removes
+no vma) did not; stk1/cow1 (no vacate at all) did not. And it was never
+only map_count -- total_vm and locked_vm of the monitor were corrupted
+the same way, silently, which makes this a live suspect for the
+teardown-churn band.
+
+vms->vma is one of the vmas being unmapped, so vms->vma->vm_mm is the
+target -- the same field vms_gather_munmap_vmas already reads for its
+map_count limit check, and valid here because the vmas are detached but
+not yet freed when the accounting runs. When vma_count is 0 nothing is
+decremented, so current->mm is a harmless fallback.
+
+Built #145, booted, and mu1/mu2/fi1 now exit with desync=0.
+
+Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+
+=== 22637388f 2026-08-20
+vmctx: never the shared zero page in an adopted address space
+
+The zero page is PG_reserved with a global refcount: once a read fault
+installs it at an address whose real bytes live on the other machine, no
+TAKE can ever move it -- vmctx_ctl_take() already names the refusal
+terminal -- and the page serve answers CLAIMING forever. pg2's hang class
+(0-4 per 256 pooled) is exactly this: the stamper thread's first stack
+fault livelocks against an unremovable PTE until the run limit, the 2s
+fault deadline never firing because every CLAIMING answer completes a
+fault service.
+
+Answering ABSENT at the take was tried and measured worse (10/16 vs
+12/16 -- NOTES; the deaths went silent). The repair the take's comment
+asks for is at the install: hook mm_forbids_zeropage() -- the door s390
+uses to keep the zero page out of KVM guest mms -- so every road to the
+zero page (anon fault, THP, migration, userfaultfd) hands an adopted mm
+an ordinary zeroed folio instead, which a later take moves like any
+other page. The predicate is lockless: one READ_ONCE of vmctx_mm_live on
+an ordinary box; a racy slot scan where vmctx is live (a false negative
+is today's behavior one adoption earlier, a false positive costs one
+real folio). vmctx_zeropage_forbidden counts firings.
+
+=== 94ec63051 2026-08-20
+vmctx: a take re-looks up the page after a copy-on-write break
+
+vmctx_ctl_take, on the -EBUSY from a folio mapped more than once, calls
+vmctx_break_cow_share to COW-break this mapping to a private copy and
+re-asks. For an anonymous share the old folio's mapcount simply dropped
+and re-prechecking the same folio was right. For a private FILE page it
+was not: the break replaces only this address's folio with a fresh
+anon copy, while page/folio still name the file's page-cache folio --
+whose refcount is pinned by the cache and by every other mapping of the
+file. The read-only text alias of a doubly-mapped ELF boundary page is
+exactly such a mapping, so the re-precheck saw refs=3 want=2 anon=0 and
+refused forever; worse, the zap and claim that follow would act on a
+folio the address no longer maps. The guest's fault then died on the 2s
+deadline (exit 131) or, when a forwarded write had landed on the page,
+the pull served the pristine file bytes over it (wrong data). netsurf
+dies this way relocating a freshly dlopened library; tests/dl1
+reproduces it, and dl1b (remap only, no forwarded write) isolates the
+take refusal from the coherence question.
+
+Fix: after a successful break, re-run get_user_pages_remote so page,
+folio and vma name the fresh private anon copy -- mapcount 1, no
+page-cache reference -- which the precheck and the claim move like any
+other page. A break that leaves nothing at the address (a race) takes
+the absent path and the guest refaults, never a zap/claim on a NULL
+page.
+
+Co-Authored-By: Bi Wu <biwu85@gmail.com>
+
+=== 7a1fd15e5 2026-08-21
+vmctx: a cross-task SET or PROT is refused, never applied to the monitor's mm
+
+vmctx_apply_map_rep() handled UNMAP and ZAP for a task that is not the
+caller, but SET went through vm_mmap() and PROT through
+do_mprotect_pkey(), both of which act on current->mm. Applied from
+VMCTX_CTL_APPLYMAP -- the monitor fanning one context's mapping change
+out to its siblings -- current is the MONITOR, so every SET for a
+sibling mapped the guest's backing object into vmremote's own address
+space at the guest address. Photographed on tests/mf2: the monitor
+carried 7ffff57f0000-7ffff77f4000 rw-s /memfd:vmctx-guest (the parent's
+thread stacks). Every context the monitor clone()d afterwards inherited
+that VMA; a forked child then read its PARENT's live stack through it
+while its own object held the bytes the copy-on-write break had given
+it, and died of a stale saved canary or a return address popped from
+the parent's later frames. The same shape killed firefox's sandbox child
+and netsurf's glycin forks (forks from threaded parents).
+
+Refuse both when t != current, counted in
+vmctx_apply_map_remote_refused. A sibling not given a SET maps the range
+on its own next fault, in its own task, where the kernel can; its own
+fault reply re-establishes the protection the monitor records.
+
+=== a52a8a9c7 2026-08-21
+vmctx: the fault deadline defaults to 6 s, the outermost of the nested page budgets
+
+The source's page GET socket bound (4 s) sits inside the deadline, and
+the destination's GET handler (pull_wait 500 + claim wait 1000 + take
+wait 1000 ms) inside that. At 2000 ms the outer bound was smaller than
+the middle one, so under pool load a GET that merely ran long ended its
+context -- 'remote GET of ... after 2009ms', 'the page channel failed
+and did not recover', exit 13, 2 of 256 hx2 runs. The tools raise a
+lower live value to 6000 at start-up; the default agrees with them.
+
+=== 63809af76 2026-08-21
+vmctx: TAKEOBJ re-reads the folio after the punch, and the mm table holds 256 address spaces
+
+Two changes for the pools' residual (NOTES 6.1a): a thread-stack page that
+crosses to the source and comes back with its content gone, every userspace
+crossing counter at 0 -- a race beneath every instrument that exists,
+because it happens inside the hand-over itself.
+
+TAKEOBJ now keeps a kernel copy of the bytes it handed over and re-reads
+the folio after the punch, while the folio is still ours (reference and
+lock). Nothing above should be able to change it by then: the unmap
+cleared every PTE, the kick retired every guest translation, the lock
+parks every faulter. A folio that changed anyway names a guest that stored
+through a translation the kick did not retire. Counted
+(vmctx_takeobj_stale_store), named (offset, old and new word, cpu, pid),
+and the NEWER bytes are handed over in place of the stale copy, so the
+store is late rather than lost; three re-reads, then counted unresolved.
+
+The mm-tracking table goes from 64 slots to 256: it overflowed once on the
+live box (vmctx_mm_overflow=1) under an 8-way pool of fork-heavy work, and
+an overflowed address space has every fault hook fall through -- silent
+zero-invention for the whole of its life.
+
+=== 5a1e236c7 2026-08-22
+vmctx: every folio created in a context's object is counted by path and stamped, and a foreign read of a hole is told so instead of being given a zero folio
+
+The hx2 residual (one writer's store reading back as zero at ~2%) was a
+folio the kernel made in the backing object with no install: a monitor's
+VMCTX_CTL_PEEK of a page whose folio a TAKEOBJ had punched between the
+pagemap check and the read GUP-faulted the hole, and shmem_fault allocated
+a zero folio that every sibling context then mapped as the address space's
+memory. vmctx_foreign_file_fault() counted this class by looking the folio
+up before the fault proceeded, which cannot see the punch in between, and
+so refuted the right door for a whole session.
+
+- vmctx_shmem_alloced(), called at shmem_get_folio_gfp()'s one allocation
+  site: on a live context's object, count by who asked (the context's own
+  user or kernel-mode fault, a non-context mapper, a foreign write -- the
+  install -- or read, a file write/fallocate), print every non-install
+  event, and stamp a per-(object,page) table with the last allocation.
+- TAKEOBJ names the maker of every all-zero page it captures from that
+  stamp (266 of 266 in one chain; the only non-install maker was the PEEK).
+- vmctx_shmem_may_alloc(), asked right before the allocation: a foreign
+  READ of a hole in a kern-mounted shmem object (memfd, MAP_SHARED
+  anonymous -- not a named tmpfs file, where the file's zeros are the
+  answer and refusing broke rd1) returns -EFAULT, a short read the
+  monitors already handle. The A/B switch that proved it is deleted; the
+  numbers stay at the counters: chains of suite + 48x8 hx2/pg3/ws1/sig1
+  went from 34/0 46/47/48/48 to 34/0 48/48/48/48.
+- mm/memory.c carries the vmctx_fault_seen() accounting hook that the git
+  tree had since session 27 and the box's build never shipped.
+
+Kernel builds #150 (census), #151 (refusal, all shmem), #152 (kern-mounted
+only), #153 (switch deleted) on 10.0.0.229.
+
+Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+
+=== ffb7bd585 2026-08-23
+vmctx: the page record lives in the kernel beside the page tables, and a fault claims its page before the monitor is told
+
+Where each page of an adopted address space is -- HOME, REMOTE, CLAIM,
+TRANSIT, NONE -- is now one xarray per vmctx_mm_slot, packed as
+state | sum | gen | stamp, and every transition is made under the mm's
+lock together with the page-table action it names. The monitor's
+userspace table, the ownership sweeper, the in-flight table and the
+serve-path retry ladder that reconciled it with three separately-read
+kernel facts (the maps text, the pagemap, a peek) are gone with the
+reason for them.
+
+Five ctls (uapi 22-27). VMCTX_CTL_SERVE answers the destination's "give
+me this page" in one step under mmap_read_lock: the fault path's own
+VMA lookup (a hole below a grow-down stack is grown), the class, the
+record, then copy (read-only, or a writable MAP_SHARED file) or TAKE
+(writable private: TRANSIT recorded before the zap, so nothing moves the
+page in between) -- TAKEN/COPIED/ABSENT/CLAIMING/DENIED/NOMAP, -EBUSY for
+a syscall hold. VMCTX_CTL_LAND installs a fetched page and records HOME
+(IF_ABSENT: a landed copy beats arriving bytes). VMCTX_CTL_PGACK settles
+TRANSIT -> REMOTE on the destination's INSTALLED ack, sum-guarded.
+VMCTX_CTL_PGSCAN lists a range's pages in a state mask (the shared-file
+reclaim). VMCTX_CTL_PGSTATE/PGSET read and write one entry. SERVE_PROBE
+reports record, class and presence and moves nothing.
+
+The claim is the kernel's: vmctx_anon_fault CLAIMs the page before
+vmctx_report, so every SERVE of it answers CLAIMING and a sibling
+context's fault on it waits in the kernel on the entry's waitqueue (the
+retry path, off every lock; the non-retry path reports the prior state
+and the monitor waits instead, avoiding the ws1 three-way deadlock). The
+monitor's answer releases: LAND/SELF -> HOME, KILL -> prior. A fault that
+finds TRANSIT waits too (#155): a claim stolen from a serve was a page
+fetched back from the machine it was being sent to. Records are erased by
+the vacate hook. The retry of a SELF-answered fault is not re-asked.
+
+Counters: vmctx_pgrec_{claims,waits,wait_timeouts,serve_*,healed,acks,
+ack_stale,lands,land_present,erased,nomem}; vmctx_pgrec_transit_ms.
+
+=== 2b969c901 2026-08-23
+vmctx: the retried pass of a service fault drops mmap_read_lock before the monitor is asked, as the first pass does
+
+The first pass of vmctx_anon_fault releases the fault lock and reports the
+fault off every lock (VM_FAULT_RETRY), because a report made while holding
+mmap_read_lock is the reader in a three-way cycle: the monitor's install
+wants the same lock and a writer queued between them waits on the reader.
+The TRIED pass kept the blocking form on the reasoning that it bounds the
+loop to one drop. That blocking pass was the reader in the same cycle
+across two machines: a sibling's claim on the page in flight, the TRIED
+pass reporting it under the lock while the monitor waited for the
+sibling's landing, main's mmap of a new thread stack queued for the write
+lock, and the other machine's VMCTX_CTL_SERVE queued behind the writer --
+so its pull of the page stayed in flight and its GET handler answered the
+sibling's fetch INFLIGHT until the 6 s fault deadline ended the run. Every
+serve of the address space sat 6 s inside the ctl (hx2, ~1 in 100 pool
+runs, exit 131 at 6.8 s).
+
+The TRIED pass now drops the lock as well, exactly as handle_userfault()
+does on every pass. The loop is bounded by progress rather than a count: a
+page the monitor supplied is present on the retry; one it declined reads
+HOME in the record and is filled locally before the drop, without a
+re-ask; only a page that left again between the landing and the retry is
+reported again, and that is a new hand-over. vmctx_af_retry_tried counts
+the second-pass drops. Measured over one chain: 92224 such drops,
+fault_deadline_hits 0, pgrec_wait_timeouts 0, take_lost 0 (the chains
+before carried 7-21 wait timeouts and several deadline kills each).
+
+=== 4d6db37f5 2026-08-23
+vmctx: the mm change-log notifier is put at context exit, not unregistered
+
+mmu_notifier_unregister() waits a full SRCU grace period in the exiting
+task -- once per context, on both machines -- and that wait was
+photographed in session 40 as every context of a threaded program parked
+in state D at __synchronize_srcu during teardown, and as tens of
+milliseconds of a short program's life outside every accounted phase.
+mmu_notifier_put() unhooks the subscription immediately (no callback can
+start after it) and frees the container from the SRCU callback
+(vmctx_mn_free) once any callback still running has returned. The log
+callback reads only the mm-keyed table, never the context, so nothing in
+the exit path needs to wait. The kick subscription (an A/B arm, off by
+default) keeps the synchronous form, because it shares the container and
+must be gone before the container is freed.
+
+=== 17a62d456 2026-08-23
+vmctx: VMCTX_MAP_SET_POPULATE -- a fault's reply maps a verified run from the object and makes it present
+
+A chunk fetched around one guest fault used to die at the install: only the
+faulting page has a mapping when the fault is reported (vmctx_back_fault
+backs one page), so the neighbours had nowhere to land and the monitor
+stopped fetching chunks for the run. The monitor now writes them into the
+backing object and answers the fault with this op: VMCTX_MAP_SET of the
+landed run from the object with the range's own protection, plus
+MAP_POPULATE, so vm_mmap_pgoff() faults the run in through the ordinary
+path in the context's own task before the next VMRUN. A present page does
+not fault, so the neighbours cost no VMEXIT and no monitor round trip when
+the program reaches them (wc: 513 -> 424 fault events with a two-page
+readahead window, 263 with a fixed 64 KiB one).
+
+The monitor may name only pages it has verified the object holds:
+populating a hole would have shmem allocate a zero folio in the object,
+which is the session-36 door. Read faults on a shared mapping, so a
+writable range's first store would still fault; the monitor chunks only
+ranges the program cannot write.
+
+=== beda39fd4 2026-08-23
+vmctx: SET_POPULATE write-faults the run by hand where the mapping allows writing
+
+mm_populate() refuses to write-fault a shared mapping (dirty accounting),
+so MAP_POPULATE installed read-only entries and a writable range's every
+first store still exited to the monitor -- a protection fault per page,
+which is what the op exists to remove. The populate is now a GUP loop in
+the context's own task with FOLL_WRITE where the mapping's protection
+allows it, exactly the fault the context's own store would take; the
+monitor names only pages it has verified the object holds, so no fault
+here allocates. This is what lets the monitor chunk WRITABLE ranges.
+
+=== 5313628c3 2026-08-23
+vmctx: a dirty file folio that refuses to split gets its writeback started
+
+A large page-cache folio of a freshly written file cannot be split -- the
+split must drop the buffers and dirty buffers refuse -- so every take of
+such a folio answers -EBUSY until the flusher's own timer happens to visit
+the file. Measured (session 41, tests/pf5): the first run after a deploy
+spent 8 x 1.07 s spinning on one order-1 folio of the just-copied binary
+(refs=5 want=4 mapcount=1 anon=0), self-healing the moment writeback ran;
+45 steady-state runs never saw it. The wait was for IO nobody had started.
+
+Start it: on a refused split of a dirty file folio, kick filemap_flush()
+on the mapping -- async, ratelimited to one kick per half second, the
+mapping read under the folio lock the split already holds (the vma the
+take walked pins the file across the unlock). The serve's existing retry
+loop then finds clean buffers within milliseconds and the split goes
+through. vmctx_take_split_flushed counts the kicks; the refusal line now
+says whether a flush was started.
+
+=== 626a86b18 2026-08-23
+vmctx: the service role's in-band clear-tid is off -- the owner's teardown clear is the one clear
+
+The owner's teardown performs the protocol clear BEFORE the service thread
+is told to exit: poke_owned(0) with a sibling fallback, a re-armed futex
+wake on a live member, a verify-read, and only then the assisted exit. The
+exit path's put_user then re-takes the descriptor page from the joiner
+that has just read it -- one needless cross-machine bounce per thread
+exit -- and when the fault service is itself mid-teardown that fault sits
+the whole 6 s deadline inside the dying thread (vmctx_cleartid_failed 128
+over one session; fault_deadline_hits ~1 per chain, always this).
+
+Runtime-flippable (vmctx_cleartid_inband_on) while ws1/sig1/pg1 judge;
+vmctx_cleartid_svc_deferred counts the exits that left the clear to the
+owner. The pointer is still NULLed either way, so mm_release() can never
+repeat the write outside the protocol. The destination role is unchanged
+(already suppressed: no futex concept there).
+
+=== 7667716dc 2026-08-23
+vmctx: the fault census names WHO shares a context's memory, not just that somebody did
+
+The owner's rule: any task that uses ANY part of a context's mm must be
+handled by the protocol. The census had one number for every fault a
+non-owner took on a context's address space -- 10.3M per session, the
+monitor's own designed supplies and any third party fused together, which
+is exactly the number a defect hides in.
+
+Split it. The mm registry now records the monitor's thread group beside
+each noted mm, and vmctx_fault_seen() attributes every foreign fault:
+vmctx_f_supplier (the monitor's threads: POKE/PEEK/SERVE/LAND placing
+pages) or vmctx_f_third (a debugger, /proc/<pid>/mem, process_vm_readv,
+an io_uring worker, any kthread_use_mm user) -- the third kind is
+answered by the local kernel inventing a page into the context's memory,
+the no-invented-pages rule broken through a side door, and each is named
+(comm, pid, read/write) as it happens.
+
+And the other half of sharing, which no mm-keyed hook can see: a VM_SHARED
+file mapping a context maps (a SysV segment shmat'ed to an X server, a
+memfd handed to a sandbox helper) touched by an mm the protocol does not
+know. Shared mappings are registered as a context faults them; a foreign
+mm's fault on the same mapping counts vmctx_f_sharedobj_foreign and names
+the toucher and the file. Keys are compared, never dereferenced.
+
+Counters only -- behavior is unchanged; refusal or redirection comes after
+the numbers say who actually arrives by these doors.
+
+=== 4d2a0eb45 2026-08-23
+vmctx: the census records the monitor when it BINDS, not only when the mm is noted
+
+A guest context's mm is noted before VMCTX_CTL_ATTACH gives it a monitor,
+so its slot carried mon_tgid 0 and the census attributed every one of that
+monitor's supplies to a third party -- vmremote-local's ordinary writes
+were the loudest 'THIRD-PARTY access' in the first measured browser run.
+ATTACH now records the binding monitor's thread group into the slot,
+first-binder-wins, under the registry lock.
+
+=== fe31c9c9e 2026-08-23
+vmctx: a third party's fault on a context's memory is refused, not answered with an invented page
+
+The census (0080/0081) measured the door: pgrep/ps reading a context's
+/proc/<pid>/cmdline read-fault its stack-top pages, the local kernel
+invents zero pages into the context's mm -- hundreds per harness run --
+and every invented page SHADOWS the real bytes for the context itself.
+
+The floor of the owner's rule: a fault on a MISSING page of a noted mm
+by a task that is not one of the mm's own and not the recorded monitor's
+thread group answers VM_FAULT_SIGBUS -- the reader hears EFAULT or a
+short read, which is the truth, and nothing lands in memory the protocol
+did not put there. The supplier stays on its designed fallback-and-poke
+path; mon==0 (the pre-ATTACH window, where attribution is impossible)
+counts but does not refuse; a service thread past vmctx_task_exit
+walking its own robust list is the mm's own task and untouched.
+
+Runtime-flippable (vmctx_third_refuse), counted (vmctx_third_refused).
+Serving third parties through the protocol -- publish on a context of
+the mm and wait on pg_wq like a sibling fault -- remains the later step
+if a legitimate consumer ever needs the bytes rather than the truth.
+
+=== 00303feb5 2026-08-23
+vmctx: attributed third-party WRITES are refused; the read refusal was already standing
+
+Session 41d's honest accounting. The census said pgrep and Xvfb were
+'inventing' pages into context mms -- the print fired at
+handle_mm_fault() entry, BEFORE do_anonymous_page's existing
+vmctx_foreign_refuse door, which has been refusing every foreign READ of
+a missing page all along (158 of 158 this boot, counter and switch both
+standing). What could NOT be refused was the write side: the monitor's
+POKE/LAND supplies arrive as foreign writes, so all foreign writes fell
+through, and a third party's write (ptrace POKEDATA, /proc/<pid>/mem,
+process_vm_writev) would have the local kernel mint a page the protocol
+never placed.
+
+The registry now carries the monitor's thread group (recorded at note,
+at ATTACH, and by the first serviced ctl -- the gate's own proof of
+monitorship; not by ATTACH itself, which is gate-exempt and records its
+winner in its own case), so the two writers can be told apart: an
+attributed non-monitor WRITE is refused like a read (vmctx_third_refuse,
+default on; vmctx_third_refused counts), an unattributed one still falls
+through, counted. The refusal that 0082 put in vmctx_anon_fault was dead
+code -- that hook is guarded by current->vmctx, which a foreign task
+never has -- and is removed; the census line now says exactly which of
+the three outcomes (read refused / attributed write refused /
+unattributed write invented) the fault got.
+
+=== e4ad1073a 2026-08-24
+vmctx: a clone reply names the child twice -- the guest's namespace pid and the host's
+
+An assisted clone that runs inside a pid namespace (a sandbox's
+CLONE_NEWPID -- bwrap --unshare-all is netsurf's glycin sandbox) returns
+the namespace-relative pid: the right answer for the program, and the
+wrong name for the monitor, whose every ctl, kill and /proc access names
+tasks in the init namespace. Photographed on the bwrap payload fork: the
+clone answered "2", host pid 2 is kthreadd, and the real child parked
+in vmctx_report with nobody ever adopting it.
+
+kernel_clone() now records the child's init-ns pid on the parent's
+context (vmctx_clone_noted -- vmctx_copy_task cannot do it, it runs
+before alloc_pid), and VMCTX_CTL_LASTCHILD hands it to the monitor,
+which reads it back-to-back with the assisted clone that set it. One
+slot per task is enough: a task runs one syscall at a time, so the
+value cannot belong to any other clone.
+
+=== edec3e4c6 2026-08-24
+vmctx: the change log stamps its events itself -- a drain-time stamp cannot order them
+
+The monitor stamped vacated ranges when it DRAINED them, and a drain is a
+userspace race: the log is per mm and any connection's forwarded call
+drains it, so two threads pop concurrently and the later stamp lands on
+the earlier event. A recycled range's stale vacate then outranks the mmap
+that superseded it, and the destination -- whose skip rule is exactly
+"a vacate never touches a construction stamped newer" -- legally punches
+the live mapping. Photographed on netsurf's font scan (session 42):
+munmap, re-mmap of the next font into the same hole, the old vacate
+spilled onto a later reply stamped fresher than the new mapping's
+construction, the fresh VMA unmapped in every member, and the first read
+of the font's magic answered -14 -- exit 242, main parked in futex for
+the worker that died, the 10x10 stub window forever.
+
+So the hook stamps each event at the moment it logs it, under the log's
+own lock -- the only place that knows the true order of an address
+space's mutations. VMCTX_CTL_MMLOG hands the stamp out per entry, and
+returns cur, the counter at the drain read under the same lock: the
+reply's constructions carry cur, every event logged before that instant
+has a smaller seq, and a construction's address is unpublished until its
+reply, so no event that outranks it can precede the sample. The
+userspace counter is gone; only "later than" was ever asked of it, and
+now the kernel answers.
+

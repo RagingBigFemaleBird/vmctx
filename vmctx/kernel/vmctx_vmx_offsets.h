@@ -1,0 +1,23 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+#ifndef VMCTX_VMX_OFFSETS_H
+#define VMCTX_VMX_OFFSETS_H
+#define VMCTX_VMX_RAX 0x00
+#define VMCTX_VMX_RBX 0x08
+#define VMCTX_VMX_RCX 0x10
+#define VMCTX_VMX_RDX 0x18
+#define VMCTX_VMX_RSI 0x20
+#define VMCTX_VMX_RDI 0x28
+#define VMCTX_VMX_RBP 0x30
+#define VMCTX_VMX_R8 0x38
+#define VMCTX_VMX_R9 0x40
+#define VMCTX_VMX_R10 0x48
+#define VMCTX_VMX_R11 0x50
+#define VMCTX_VMX_R12 0x58
+#define VMCTX_VMX_R13 0x60
+#define VMCTX_VMX_R14 0x68
+#define VMCTX_VMX_R15 0x70
+#define VMCTX_VMX_FAIL 0x78
+#define VMCTX_VMX_LAUNCHED 0x80
+#define VMCTX_VMX_HOST_RSP 0x6c14
+#define VMCTX_VMX_HOST_RIP 0x6c16
+#endif

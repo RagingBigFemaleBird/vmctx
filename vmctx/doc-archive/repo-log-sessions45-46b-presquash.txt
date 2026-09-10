@@ -1,0 +1,91 @@
+# lan-boot commit messages squashed away on 2026-09-04 (sessions 45-46b)
+# The tree they produced is the single root commit that replaced them.
+
+commit 7c69f3aee5d9e306a2863762937241d583c086ce
+Author: Bi Wu <biwu85@gmail.com>
+Commit: Bi Wu <biwu85@gmail.com>
+
+    vmctx: fc1 and pipes green -- three destination ordering bugs (AUDIT #30-#32)
+    
+    Session 46b, directive "Fix fc1 and pipes so everything is green". All
+    three fixes are in user/vmremote.c; the kernel (#181) and vmhome are
+    unchanged.
+    
+    #30 fc1's churn-thread 242: cons_lock guarded the construction ring's
+        words, not the ORDER of a vacate's covering-row lookup against another
+        thread's note-then-map. layout_order_lock now spans range_vacated's
+        lookup+punch and cons_note; the REPAIR livelock guard is keyed on the
+        construction row's seq (a recycled address hit its 4th repair and was
+        declined to a kernel with no VMA). VACATE-LATE fires 13-37/run where it
+        fired 0. fc1 8/8, 6/6, 6/6.
+    
+    #31 pipes exit 98 / SIGILL in the exec'd tar: a parent's write-prep give
+        landed in the copy's object between exec_wipe's punch and its lineage
+        mark; the new image executed dash's heap page as text. The mark is set
+        first; cow_give_page_mode re-checks it after the object write and
+        undoes a give that crossed the exec. pipes 3/6 -> 9/10.
+    
+    #32 pipes' dash-subshell segfault at 0x18 in _int_malloc: a fork copy's
+        first ask through the PAGE SERVICE (source-side fault -> GET) never
+        walked the COW chain -> ABSENT while the parent held the page under
+        the fork's protection; the source's strict COWBREAK then raced the
+        parent's give and was refused "already given, copy's object has it".
+        Zeros for an anon page (TLS), the pristine file for libc's .data
+        (main_arena's bins are NULL in the file image). The GET path now gives
+        from the chain (strict) before ABSENT; a COWBREAK whose copy already
+        holds the page is re-dispatched as that GET. pipes 10/10.
+    
+    Gates (kernel #181, srcid 125c8bc4b2ea on both boxes): pipes x10 10/10,
+    fc1 x6 6/6, loopback suite x3 120/0, progs 69/0 (+3 known gaps), cross
+    suite 40/0.
+    
+    Docs: AUDIT §4.2/§4.6/§4.7 + §10 #30-#32 (the fc1 open residual paragraph
+    replaced), HANDOFF-session46.md "Session 46b", NOTES §0.
+    
+    Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+commit aa63c8b82e3689b539525646e096f92994e2eb3c
+Author: Bi Wu <biwu85@gmail.com>
+Commit: Bi Wu <biwu85@gmail.com>
+
+    vmctx: kill the wakeups -- 61 -> 16 us per forwarded call on loopback; fix the spawn handoff race; the VMX base-read fix
+    
+    Sessions 45 and 46 (HANDOFF-session45.md, HANDOFF-session46.md).
+    
+    Performance (session 46). A loopback forwarded syscall was a ring of four
+    tasks handing one message round, every hop a sleep and a wake, and the
+    sleeping let the frequency governor clock the cores down. Three changes,
+    each A/B'd on one boot with arms alternating:
+    
+      - source kernel #181 (src/linux-7.0.14, patch regenerated): spin before
+        sleeping at the four vmctx waits (vmctx_report's reply wait,
+        VMCTX_CTL_WAIT, VMCTX_CTL_SYSCALL, the service park), adaptive per site
+        and per context, need_resched() bails; vmctx_spin_us (100, 0 = the old
+        behaviour), vmctx_spin_hits/misses. 79-113 -> 23-31 us under schedutil.
+      - both halves spin before every blocking channel read (VMCTX_SOCK_SPIN_US,
+        50, recv(MSG_DONTWAIT) probes, same adaptivity): 25 -> 17.6 us.
+      - a request's header and payload in one writev (they were two segments and
+        the reader woke twice); the page PUT too.
+    
+    Final (tests/perf.sh, kernel #181, loopback, schedutil): forwarded syscall
+    16 us (was 61), page fault 29-74 us (was 37-89), compute 99.6% of native;
+    walls wc 0.041 s (0.051), curl 0.060 (0.083), python3 0.174 (0.313), sha256
+    0.135 (0.151), gzip 1.22 (1.35), links2 0.084 (0.114). The cpufreq governor
+    was the hidden variance (42-114 vs 35-40 us for the same binaries);
+    perf.sh prints it and takes GOV=performance. Readahead on loopback
+    re-measured neutral (VMCTX_RA_MIN_RTT_US tunable, default unchanged).
+    
+    Bugs. #27 (session 45): the VMX guest FS/GS base was read from the VMCS
+    after preempt_enable -- read inside vmx_enter_once now. #28: perf.sh's
+    native median glued five walls into one line. #29: a spawned context could
+    enter before its own monitor was attached (the spawner released, then
+    detached; the child's first fetch was an unrecoverable #PF with no monitor
+    -- pid1 cross-machine); the spawner now detaches without releasing and the
+    child's service thread releases after its ATTACH.
+    
+    Gates on the final binaries: loopback suite 119/120 (fc1's open residual,
+    its trail now read in AUDIT §10), cross suite 40/0, progs 65-67/69 (the
+    lifecycle residual families, hit more often at 2-3x the old speed).
+    
+    Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+

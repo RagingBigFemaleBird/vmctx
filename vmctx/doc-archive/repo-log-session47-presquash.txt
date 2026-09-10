@@ -1,0 +1,119 @@
+===== 99ecf75bd059e0c8a01493abace7eb2495ff7c62
+Bi Wu <biwu85@gmail.com> / Bi Wu
+Sun Sep 6 16:24:53 2026 -0700
+
+vmctx: netsurf renders cross-machine without the OpenSSL SHA mask now that the loader runs in the guest; xprep kills only its own display's Xvfb
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+===== 8c9fe7ed786417a80d272387c3335bb6b77d5c01
+Bi Wu <biwu85@gmail.com> / Bi Wu
+Sun Sep 6 16:16:55 2026 -0700
+
+vmctx: cross suite 40/0 with the loader in the guest; how the Intel box was brought back
+
+The cross-machine suite passes 40/0 at the new default (srcid
+44d1b78e4e3f on both boxes). The Intel box had stopped answering during
+the round; the lab's netboot servers plus a wake-on-LAN packet to its
+MAC (recorded in HANDOFF §0b) brought it back in under a minute, and the
+boot picked up the staged build by itself.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+===== 629d8c015ec6345fd9e5059b9e835b6842eb3c0a
+Bi Wu <biwu85@gmail.com> / Bi Wu
+Sun Sep 6 16:09:20 2026 -0700
+
+vmctx: the first image's loader runs in the guest by default; the native-loader shortcut becomes VMHOME_NATIVE_LOADER=1 (AUDIT #38)
+
+vmhome ran the first image's dynamic loader natively under ptrace to a
+breakpoint at AT_ENTRY and handed over at _start, so the first image's
+relocations, IFUNC choices and every library constructor executed on the
+source CPU while exec'd children's ran in the guest -- one process
+family, two rules. Cross-machine it surfaced as OpenSSL probing the
+Ryzen's SHA-NI and the Intel guest executing sha1msg1 (#UD). Owner's
+ruling: develop and gate with the correct architecture first. The
+hand-over is now at the post-exec stop (where the vDSO-hiding auxv patch
+already lived), the same point exec'd children use; the shortcut stays
+behind VMHOME_NATIVE_LOADER=1 as the measured-faster start-up.
+
+Gates at the new default (srcid 44d1b78e4e3f, loopback): suite x3 120/0,
+progs 69/0 with gdbbt -- a known gap -- passing, netsurf 3/3 renders.
+The cross suite is owed: the Intel box stopped answering during this
+round (HANDOFF §0b).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+===== 5fa029ae0cf0690df42577a1327df8db0f16a194
+Bi Wu <biwu85@gmail.com> / Bi Wu
+Sun Sep 6 15:24:30 2026 -0700
+
+vmctx: the session-47 browser demo launchers (demo/), none of which kills another run's halves
+
+xbrowser.sh/xprep.sh run a browser across the two boxes with its window
+on the AMD box's logged-in display (or Xvfb + x11vnc); lbrowser.sh and
+lbrowser0.sh run one on loopback in shared mode. The environment each
+browser needed and the VNC bridge that gives a person a clickable netsurf
+are in demo/README.md. HANDOFF §0b points here instead of at a session
+scratchpad.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
+===== 171adbf130b35bbba18352f655e1376a7e8a1dd2
+Bi Wu <biwu85@gmail.com> / Bi Wu
+Sun Sep 6 15:03:56 2026 -0700
+
+vmctx: the browser campaign -- five lifecycle/ordering fixes from netsurf and firefox corpses (AUDIT #33-#37), protocol VMR6
+
+Session 47. links2 runs cross-machine with its window on the AMD box's
+own display; netsurf renders cross-machine and 6/6 on loopback on this
+build; firefox clears its startup walls on loopback and runs ~20 s into
+the coherence residual. Each fix was read from a kept corpse:
+
+#33 The readahead's claim outlived an EEXIST landing: the record stayed
+    CLAIM and every guest pull of the page was answered CLAIMING for the
+    rest of the run (session 42b's stuck-claim stall; LAN, where
+    readahead is on). Settled to the prior state, HOME when the prior
+    was THEIRS.
+
+#34 A service task's death by signal never reached the destination
+    (netsurf's parent SIGKILLs a helper; firefox's content process
+    abort()s): the guest's contexts spun on futex(-EIO) for ever. The
+    reply carries the dead task's wait status (VMR6: ended/ended_status)
+    and the destination ends that one context on the source's word,
+    reporting the source's status home. A first form ended the whole
+    address space on one thread's word and mis-read a zombie thread's
+    exit_code 0 as SIGKILL: took a live netsurf down; corrected.
+
+#35 The construction repair fired on EFAULT only; a PROT_NONE
+    reservation another thread MAP_FIXED'd over answers EACCES from
+    TRYFAULT, so firefox's main context died -14 reading a page its own
+    thread had just mapped. EACCES repairs too.
+
+#36 The first context stood in for a gone context of ANOTHER address
+    space (a forkserver child's thread was answered from the parent's
+    mm: "no such address"). ctx0 stands in only when as_of agrees.
+
+#37 An mprotect reply had no construction row, so a sibling's first
+    touch of a glibc arena page grown by another thread was
+    unrepairable (netsurf's helper thread, every loopback run). PROT
+    replies are noted for the REPAIR only -- letting them order vacates
+    took netsurf loopback 2/3 -> 0/3 (an mprotect's stamp is unordered
+    against another thread's munmap) and is recorded as refuted.
+
+Found, not fixed: the loader and every library constructor run on the
+source, so OpenSSL probed the Ryzen's SHA-NI and the Intel guest
+executed sha1msg1 (#UD); demo workaround OPENSSL_ia32cap=:~0x20000000,
+the fix is handing the first image over at the exec stop.
+
+Harness: runany-x.sh honours VMCTX_SHARED=1 (no global kills; ends only
+its own pair) so the cross suite can run beside a demo.
+
+Gates (kernel #181, srcid 7d1715516402 both boxes): loopback suite x3
+120/0; progs 68/1 (nodework's known ~1/6 thread-list class) + 3 known
+gaps; cross suite 40/0 (all beside the running demo).
+
+Docs: AUDIT §10 #33-#37, HANDOFF §0b (session 47).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+
